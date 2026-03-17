@@ -129,7 +129,7 @@ function UserManagement() {
           <div>
             <h1 className="page-title">User Management</h1>
             <p className="page-subtitle">
-              Admin-only controls for account lifecycle and role governance.
+              Admin-only controls for account lifecycle & role governance.
             </p>
           </div>
           <div className="portal-actions">

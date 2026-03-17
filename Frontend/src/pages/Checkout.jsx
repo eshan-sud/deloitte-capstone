@@ -113,7 +113,7 @@ function Checkout() {
         <div className="container">
           <div className="card">
             <h2>Preparing checkout...</h2>
-            <p className="muted">Loading ticket and event details.</p>
+            <p className="muted">Loading ticket & event details.</p>
           </div>
         </div>
       </div>
@@ -137,7 +137,7 @@ function Checkout() {
           <div>
             <h1 className="page-title">Checkout</h1>
             <p className="page-subtitle">
-              Confirm attendee details and place the order.
+              Confirm attendee details & place the order.
             </p>
           </div>
         </div>

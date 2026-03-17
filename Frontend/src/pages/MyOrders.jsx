@@ -76,7 +76,7 @@ function MyOrders() {
           <div>
             <h1 className="page-title">My Orders</h1>
             <p className="page-subtitle">
-              Manage your ticket bookings and download-ready order references.
+              Manage your ticket bookings & download-ready order references.
             </p>
           </div>
         </div>
@@ -98,7 +98,7 @@ function MyOrders() {
           <div className="empty-state">
             <h3>No bookings yet</h3>
             <p>
-              Start by exploring upcoming events and placing your first order.
+              Start by exploring upcoming events & placing your first order.
             </p>
             <Link className="btn btn-primary" to="/events">
               Explore Events

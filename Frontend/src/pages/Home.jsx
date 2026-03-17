@@ -61,8 +61,8 @@ function Home() {
                 <span className="gradient-text"> memorable events</span>
               </h1>
               <p className="hero-subtitle">
-                EventNest helps student clubs, teams, and communities plan,
-                publish, and manage events from one clean dashboard.
+                EventNest helps student clubs, teams, & communities plan,
+                publish, & manage events from one clean dashboard.
               </p>
               <div className="hero-actions">
                 {isAuthenticated ? (
@@ -136,7 +136,7 @@ function Home() {
               <div className="feature-icon">01</div>
               <h3 className="feature-title">Auth Ready</h3>
               <p className="feature-description">
-                Register and login flow that can directly connect to your Spring
+                Register & login flow that can directly connect to your Spring
                 Boot auth APIs.
               </p>
             </div>
@@ -144,14 +144,14 @@ function Home() {
               <div className="feature-icon">02</div>
               <h3 className="feature-title">Event List</h3>
               <p className="feature-description">
-                Public event discovery page with cards and category chips.
+                Public event discovery page with cards & category chips.
               </p>
             </div>
             <div className="feature-card">
               <div className="feature-icon">03</div>
               <h3 className="feature-title">Organizer Form</h3>
               <p className="feature-description">
-                Basic create-event form to validate your UX and route wiring.
+                Basic create-event form to validate your UX & route wiring.
               </p>
             </div>
           </div>

@@ -106,7 +106,7 @@ mvn spring-boot:run
 cd ..
 ```
 
-Spring Boot uses an in-memory H2 database by default for local startup. Set `SPRING_DATASOURCE_*` and `SPRING_JPA_HIBERNATE_DIALECT` environment variables to run it against MySQL instead.
+Spring Boot uses an in-memory H2 database by default for local startup. Set `SPRING_DATASOURCE_*` & `SPRING_JPA_HIBERNATE_DIALECT` environment variables to run it against MySQL instead.
 
 ```bash
 cd Backend/node-backend

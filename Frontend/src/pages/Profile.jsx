@@ -72,7 +72,7 @@ function Profile() {
     setSuccess("");
 
     if (!formData.firstName.trim() || !formData.lastName.trim()) {
-      setError("First name and last name are required.");
+      setError("First name & last name are required.");
       return;
     }
 
@@ -101,7 +101,7 @@ function Profile() {
           <div>
             <h1 className="page-title">My Profile</h1>
             <p className="page-subtitle">
-              Update account details and manage your role-specific access.
+              Update account details & manage your role-specific access.
             </p>
           </div>
           <div className="portal-actions">

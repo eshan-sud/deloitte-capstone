@@ -200,7 +200,7 @@ function Login() {
             <div className="image-content">
               <h2>Bring Your Community Together</h2>
               <p>
-                Run registrations, event timelines, and updates from one place.
+                Run registrations, event timelines, & updates from one place.
               </p>
               <div className="feature-list">
                 <div className="feature-item">

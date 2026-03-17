@@ -146,7 +146,7 @@ function CreateEvent() {
     }
 
     if (!formData.date || !formData.startTime || !formData.endTime) {
-      setError("Date, start time, and end time are required.");
+      setError("Date, start time, & end time are required.");
       return;
     }
 
@@ -234,7 +234,7 @@ function CreateEvent() {
           <div className="card">
             <h2>Loading event form...</h2>
             <p className="page-subtitle" style={{ marginBottom: 0 }}>
-              Preparing venue and schedule details.
+              Preparing venue & schedule details.
             </p>
           </div>
         </div>
@@ -250,7 +250,7 @@ function CreateEvent() {
             {isEditMode ? "Edit Event" : "Create Event"}
           </h1>
           <p className="page-subtitle">
-            Configure event details, pricing, capacity, and publishing status.
+            Configure event details, pricing, capacity, & publishing status.
           </p>
         </div>
 
@@ -392,8 +392,8 @@ function CreateEvent() {
               onChange={handleChange}
               placeholder={
                 venueLabel
-                  ? `Example: Venue and production spend for ${venueLabel}`
-                  : "Example: Venue and production spend"
+                  ? `Example: Venue & production spend for ${venueLabel}`
+                  : "Example: Venue & production spend"
               }
             />
           </label>
@@ -404,7 +404,7 @@ function CreateEvent() {
               name="description"
               value={formData.description}
               onChange={handleChange}
-              placeholder="Describe your event goals and agenda"
+              placeholder="Describe your event goals & agenda"
               rows={5}
             />
           </label>

@@ -59,7 +59,7 @@ function SignUp() {
       newErrors.password = "Password must be at least 8 characters";
     } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(formData.password)) {
       newErrors.password =
-        "Password must contain uppercase, lowercase, and number";
+        "Password must contain uppercase, lowercase, & number";
     }
 
     if (formData.password !== formData.confirmPassword) {
@@ -67,7 +67,7 @@ function SignUp() {
     }
 
     if (!formData.agreeToTerms) {
-      newErrors.agreeToTerms = "You must agree to the terms and conditions";
+      newErrors.agreeToTerms = "You must agree to the terms & conditions";
     }
 
     setErrors(newErrors);

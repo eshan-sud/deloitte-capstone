@@ -117,7 +117,7 @@ function getSeedData() {
         venueId: "v-innovation",
         organizerId: "u-organizer",
         description:
-          "Community conference with talks on OSS tooling, governance, and contributor onboarding.",
+          "Community conference with talks on OSS tooling, governance, & contributor onboarding.",
         startAt: "2026-04-20T10:00:00.000Z",
         endAt: "2026-04-20T16:00:00.000Z",
         capacity: 220,
@@ -134,7 +134,7 @@ function getSeedData() {
         venueId: "v-studio",
         organizerId: "u-organizer",
         description:
-          "Product design sprint review with mentor feedback, prototype demos, and networking.",
+          "Product design sprint review with mentor feedback, prototype demos, & networking.",
         startAt: "2026-04-25T12:30:00.000Z",
         endAt: "2026-04-25T15:00:00.000Z",
         capacity: 140,
@@ -151,7 +151,7 @@ function getSeedData() {
         venueId: "v-auditorium",
         organizerId: "u-organizer",
         description:
-          "Career guidance, networking pods, and panel sessions with recruiters and alumni.",
+          "Career guidance, networking pods, & panel sessions with recruiters & alumni.",
         startAt: "2026-05-04T09:00:00.000Z",
         endAt: "2026-05-04T17:00:00.000Z",
         capacity: 420,
@@ -168,7 +168,7 @@ function getSeedData() {
         venueId: "v-innovation",
         organizerId: "u-organizer",
         description:
-          "Night-long build sprint with mentor checkpoints and final team pitches.",
+          "Night-long build sprint with mentor checkpoints & final team pitches.",
         startAt: "2026-05-11T17:30:00.000Z",
         endAt: "2026-05-11T23:00:00.000Z",
         capacity: 160,
@@ -216,7 +216,7 @@ function getSeedData() {
         id: "b-10002",
         eventId: "e-design-sprint",
         plannedAmount: 85000,
-        note: "Workshop kits and production",
+        note: "Workshop kits & production",
         createdAt: baseTime,
       },
     ],
@@ -234,7 +234,7 @@ function getSeedData() {
         eventId: "e-open-source",
         category: "Marketing",
         amount: 28000,
-        note: "Social and print campaign",
+        note: "Social & print campaign",
         createdAt: baseTime,
       },
       {
@@ -242,7 +242,7 @@ function getSeedData() {
         eventId: "e-design-sprint",
         category: "Operations",
         amount: 24000,
-        note: "Production and setup",
+        note: "Production & setup",
         createdAt: baseTime,
       },
     ],
@@ -380,7 +380,7 @@ export const mockApi = {
         userId: newUser.id,
         title: "Welcome to EventNest",
         message:
-          "Your account is active. Explore events and book your first experience.",
+          "Your account is active. Explore events & book your first experience.",
         type: "SYSTEM",
         isRead: false,
         createdAt: timestamp,
@@ -642,7 +642,7 @@ export const mockApi = {
     });
   },
 
-  // TEMPORARY MOCK API: Order and attendee endpoints simulation
+  // TEMPORARY MOCK API: Order & attendee endpoints simulation
   async placeOrder(token, payload) {
     return withMockLatency(() => {
       const db = loadDb();
@@ -819,7 +819,7 @@ export const mockApi = {
     });
   },
 
-  // TEMPORARY MOCK API: Dashboard and reporting endpoints simulation
+  // TEMPORARY MOCK API: Dashboard & reporting endpoints simulation
   async getDashboardSummary(token) {
     return withMockLatency(() => {
       const db = loadDb();

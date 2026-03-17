@@ -84,7 +84,7 @@ function Notifications() {
           <div>
             <h1 className="page-title">Notification Center</h1>
             <p className="page-subtitle">
-              Stay updated on booking confirmations, reminders, and platform
+              Stay updated on booking confirmations, reminders, & platform
               alerts.
             </p>
           </div>
@@ -110,7 +110,7 @@ function Notifications() {
         {!isLoading && notifications.length === 0 ? (
           <div className="empty-state">
             <h3>No notifications yet</h3>
-            <p>Important order and event updates will appear here.</p>
+            <p>Important order & event updates will appear here.</p>
           </div>
         ) : null}
 

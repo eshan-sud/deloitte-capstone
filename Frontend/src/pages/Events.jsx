@@ -82,7 +82,7 @@ function Events() {
           <div>
             <h1 className="page-title">Discover Events</h1>
             <p className="page-subtitle">
-              Search, filter, and book upcoming experiences from one catalog.
+              Search, filter, & book upcoming experiences from one catalog.
             </p>
           </div>
 
@@ -142,7 +142,7 @@ function Events() {
           <div className="card">
             <h2>Loading events...</h2>
             <p className="page-subtitle" style={{ marginBottom: 0 }}>
-              Fetching schedule and availability.
+              Fetching schedule & availability.
             </p>
           </div>
         ) : null}

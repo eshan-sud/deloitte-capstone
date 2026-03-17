@@ -69,12 +69,12 @@ function Dashboard() {
         {
           to: "/admin/reports",
           title: "Reports",
-          description: "Review revenue and variance",
+          description: "Review revenue & variance",
         },
         {
           to: "/admin/users",
           title: "Users",
-          description: "Manage account roles and status",
+          description: "Manage account roles & status",
         },
         {
           to: "/create-event",
@@ -89,7 +89,7 @@ function Dashboard() {
         {
           to: "/create-event",
           title: "New Event",
-          description: "Create and publish event pages",
+          description: "Create & publish event pages",
         },
         {
           to: "/events",
@@ -164,7 +164,7 @@ function Dashboard() {
           <div className="card">
             <h2>Loading dashboard...</h2>
             <p className="page-subtitle" style={{ marginBottom: 0 }}>
-              Pulling your latest KPIs and schedule view.
+              Pulling your latest KPIs & schedule view.
             </p>
           </div>
         ) : null}
@@ -241,7 +241,7 @@ function Dashboard() {
             <div className="dashboard-note">
               <p className="muted">
                 This dashboard aggregates live data from the reporting,
-                notification, and Spring event services.
+                notification, & Spring event services.
               </p>
             </div>
           </aside>
@@ -251,9 +251,9 @@ function Dashboard() {
           <section className="card" style={{ marginTop: "1rem" }}>
             <h2 className="panel-title">Governance Checklist</h2>
             <ul className="governance-list">
-              <li>Review inactive users and role assignments weekly.</li>
+              <li>Review inactive users & role assignments weekly.</li>
               <li>Validate budget variance reports for outlier events.</li>
-              <li>Track cancellation trends and platform health indicators.</li>
+              <li>Track cancellation trends & platform health indicators.</li>
             </ul>
           </section>
         ) : null}
@@ -263,10 +263,8 @@ function Dashboard() {
             <h2 className="panel-title">Organizer Checklist</h2>
             <ul className="governance-list">
               <li>Publish draft events at least 72 hours before launch.</li>
-              <li>Monitor seat utilization and venue capacity constraints.</li>
-              <li>
-                Respond to attendee notifications and cancellations daily.
-              </li>
+              <li>Monitor seat utilization & venue capacity constraints.</li>
+              <li>Respond to attendee notifications & cancellations daily.</li>
             </ul>
           </section>
         ) : null}

@@ -55,7 +55,7 @@ function AdminReports() {
           <div>
             <h1 className="page-title">Admin Reporting Summary</h1>
             <p className="page-subtitle">
-              Monitor platform health, order performance, and budget variance.
+              Monitor platform health, order performance, & budget variance.
             </p>
           </div>
           <div className="portal-actions">
@@ -70,7 +70,7 @@ function AdminReports() {
         {isLoading ? (
           <div className="card">
             <h2>Generating report...</h2>
-            <p className="muted">Calculating totals and budget metrics.</p>
+            <p className="muted">Calculating totals & budget metrics.</p>
           </div>
         ) : null}
 
