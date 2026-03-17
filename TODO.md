@@ -114,20 +114,20 @@ Status legend:
 
 ## Backend (ASP.NET)
 
-- [ ] ASP.NET Web API scaffold exists
-- [ ] `GET /api/reports/health` exists
-- [ ] `GET /api/reports/health/live` exists
-- [ ] `GET /api/reports/summary` exists (database-backed)
-- [ ] Reporting endpoints are connected to real database queries
-- [ ] Budget & expense reporting endpoints exist
+- [x] ASP.NET Web API scaffold exists
+- [x] `GET /api/reports/health` exists
+- [x] `GET /api/reports/health/live` exists
+- [x] `GET /api/reports/summary` exists (database-backed)
+- [x] Reporting endpoints are connected to real database queries
+- [x] Budget & expense reporting endpoints exist
 - [ ] Admin report filters (date range, organizer, status) exist
-- [ ] Reporting health endpoint (`GET /api/reports/health`)
-- [ ] Summary endpoint skeleton (`GET /api/reports/summary`)
-- [ ] Real summary query from MySQL (users/events/orders/revenue)
-- [ ] Budget creation endpoint (`POST /api/reports/budget`)
-- [ ] Budget vs actual endpoint (`GET /api/reports/budget-vs-actual`)
-- [ ] Expense entry endpoint (`POST /api/reports/expenses`)
-- [ ] Financial export endpoint (`GET /api/reports/export?format=csv`)
+- [x] Reporting health endpoint (`GET /api/reports/health`)
+- [x] Summary endpoint skeleton (`GET /api/reports/summary`)
+- [x] Real summary query from MySQL (users/events/orders/revenue)
+- [x] Budget creation endpoint (`POST /api/reports/budget`)
+- [x] Budget vs actual endpoint (`GET /api/reports/budget-vs-actual`)
+- [x] Expense entry endpoint (`POST /api/reports/expenses`)
+- [x] Financial export endpoint (`GET /api/reports/export?format=csv`)
 - [ ] Connect ASP.NET reporting service to MySQL
 - [ ] Replace mock summary with real aggregate queries
 - [ ] Implement budget & expense APIs

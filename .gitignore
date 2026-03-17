@@ -73,7 +73,7 @@ Backend/spring-backend/application-local.properties
 # dotnet-backend
 Backend/dotnet-backend/bin/
 Backend/dotnet-backend/obj/
-Backend/dotnet-backend/.env/
+Backend/dotnet-backend/.env
 Backend/dotnet-backend/.vscode/
 Backend/dotnet-backend/.idea/
 Backend/dotnet-backend/*.suo
