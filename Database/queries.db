@@ -1,0 +1,654 @@
+-- =============================================================
+-- CAPSTONE DATABASE QUERY PACK
+-- Covers:
+-- 1) MySQL (Spring Auth/Event/Order + ASP.NET Reporting)
+-- 2) MongoDB (Node Notification Service)
+-- Updated: 2026-03-16
+-- =============================================================
+
+
+-- =============================================================
+-- MYSQL: SETUP + SCHEMA
+-- =============================================================
+
+CREATE DATABASE IF NOT EXISTS event_management
+	CHARACTER SET utf8mb4
+	COLLATE utf8mb4_unicode_ci;
+
+USE event_management;
+
+
+-- -----------------------------
+-- SPRING CORE TABLES
+-- -----------------------------
+
+CREATE TABLE IF NOT EXISTS users (
+	id BIGINT AUTO_INCREMENT PRIMARY KEY,
+	first_name VARCHAR(50) NOT NULL,
+	last_name VARCHAR(50) NOT NULL,
+	email VARCHAR(100) NOT NULL UNIQUE,
+	password VARCHAR(255) NOT NULL,
+	is_active TINYINT(1) NOT NULL DEFAULT 1,
+	role ENUM('ADMIN', 'ORGANIZER', 'CUSTOMER') NOT NULL DEFAULT 'CUSTOMER',
+	created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+	INDEX idx_users_email (email),
+	INDEX idx_users_role_active (role, is_active)
+);
+
+CREATE TABLE IF NOT EXISTS venues (
+	id BIGINT AUTO_INCREMENT PRIMARY KEY,
+	name VARCHAR(120) NOT NULL,
+	address VARCHAR(255) NOT NULL,
+	capacity INT NOT NULL,
+	price_per_hour DECIMAL(12,2) NOT NULL,
+	active TINYINT(1) NOT NULL DEFAULT 1,
+	created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+	INDEX idx_venues_active (active)
+);
+
+CREATE TABLE IF NOT EXISTS events (
+	id BIGINT AUTO_INCREMENT PRIMARY KEY,
+	title VARCHAR(140) NOT NULL,
+	category VARCHAR(80) NOT NULL,
+	description TEXT NOT NULL,
+	venue_id BIGINT NOT NULL,
+	organizer_id BIGINT NOT NULL,
+	start_at DATETIME NOT NULL,
+	end_at DATETIME NOT NULL,
+	capacity INT NOT NULL,
+	seats_booked INT NOT NULL DEFAULT 0,
+	price DECIMAL(12,2) NOT NULL,
+	status ENUM('DRAFT', 'PUBLISHED', 'CLOSED', 'CANCELLED') NOT NULL DEFAULT 'DRAFT',
+	created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+	CONSTRAINT fk_events_venue FOREIGN KEY (venue_id) REFERENCES venues(id),
+	CONSTRAINT fk_events_organizer FOREIGN KEY (organizer_id) REFERENCES users(id),
+	INDEX idx_events_status_start (status, start_at),
+	INDEX idx_events_category (category),
+	INDEX idx_events_organizer (organizer_id)
+);
+
+CREATE TABLE IF NOT EXISTS orders (
+	id BIGINT AUTO_INCREMENT PRIMARY KEY,
+	user_id BIGINT NOT NULL,
+	event_id BIGINT NOT NULL,
+	quantity INT NOT NULL,
+	total_amount DECIMAL(12,2) NOT NULL,
+	status ENUM('PENDING', 'CONFIRMED', 'CANCELLED') NOT NULL DEFAULT 'PENDING',
+	ticket_code VARCHAR(40) NOT NULL UNIQUE,
+	created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+	CONSTRAINT fk_orders_user FOREIGN KEY (user_id) REFERENCES users(id),
+	CONSTRAINT fk_orders_event FOREIGN KEY (event_id) REFERENCES events(id),
+	INDEX idx_orders_user_created (user_id, created_at),
+	INDEX idx_orders_event_status (event_id, status),
+	INDEX idx_orders_status (status)
+);
+
+
+-- -----------------------------
+-- ASP.NET REPORTING TABLES
+-- -----------------------------
+-- Notes:
+-- 1) Service expects these table names: notifications, budgets, expenses.
+-- 2) Date filtering checks multiple candidate columns and works with created_at.
+
+CREATE TABLE IF NOT EXISTS notifications (
+	id BIGINT AUTO_INCREMENT PRIMARY KEY,
+	event_id BIGINT NULL,
+	recipient VARCHAR(255) NULL,
+	type VARCHAR(50) NULL,
+	channel VARCHAR(50) NULL,
+	status VARCHAR(30) NOT NULL DEFAULT 'SENT',
+	message TEXT NULL,
+	created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	INDEX idx_notifications_created (created_at),
+	INDEX idx_notifications_status (status)
+);
+
+CREATE TABLE IF NOT EXISTS budgets (
+	id BIGINT AUTO_INCREMENT PRIMARY KEY,
+	event_id BIGINT NOT NULL,
+	planned_amount DECIMAL(18,2) NOT NULL,
+	note VARCHAR(500) NULL,
+	created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	INDEX idx_budgets_event (event_id),
+	INDEX idx_budgets_created (created_at),
+	CONSTRAINT fk_budgets_event FOREIGN KEY (event_id) REFERENCES events(id)
+);
+
+CREATE TABLE IF NOT EXISTS expenses (
+	id BIGINT AUTO_INCREMENT PRIMARY KEY,
+	event_id BIGINT NOT NULL,
+	category VARCHAR(100) NOT NULL,
+	amount DECIMAL(18,2) NOT NULL,
+	note VARCHAR(500) NULL,
+	created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	INDEX idx_expenses_event (event_id),
+	INDEX idx_expenses_category (category),
+	INDEX idx_expenses_created (created_at),
+	CONSTRAINT fk_expenses_event FOREIGN KEY (event_id) REFERENCES events(id)
+);
+
+
+-- =============================================================
+-- MYSQL: OPTIONAL BASE SEED
+-- =============================================================
+-- Keep user seeding to Spring app if possible so passwords are BCrypt-hashed.
+-- Spring DataSeeder inserts:
+-- admin@eventnest.io, organizer@eventnest.io, customer@eventnest.io
+
+INSERT INTO venues (name, address, capacity, price_per_hour, active)
+SELECT 'Innovation Hall', 'City Center Campus', 220, 2200.00, 1
+WHERE NOT EXISTS (SELECT 1 FROM venues WHERE name = 'Innovation Hall');
+
+INSERT INTO venues (name, address, capacity, price_per_hour, active)
+SELECT 'Studio Commons', 'Design District', 140, 1600.00, 1
+WHERE NOT EXISTS (SELECT 1 FROM venues WHERE name = 'Studio Commons');
+
+INSERT INTO venues (name, address, capacity, price_per_hour, active)
+SELECT 'Main Auditorium', 'Riverside Block', 420, 3500.00, 1
+WHERE NOT EXISTS (SELECT 1 FROM venues WHERE name = 'Main Auditorium');
+
+
+-- =============================================================
+-- MYSQL: AUTH + USER MANAGEMENT QUERIES
+-- =============================================================
+
+-- Login lookup
+SELECT id, first_name, last_name, email, password, role, is_active, created_at, updated_at
+FROM users
+WHERE LOWER(email) = LOWER(?)
+LIMIT 1;
+
+-- Current user by id
+SELECT id, first_name, last_name, email, role, is_active, created_at, updated_at
+FROM users
+WHERE id = ?;
+
+-- Register user (password must already be hashed in application layer)
+INSERT INTO users (first_name, last_name, email, password, role, is_active)
+VALUES (?, ?, ?, ?, ?, 1);
+
+-- Update own profile
+UPDATE users
+SET first_name = ?,
+		last_name = ?,
+		email = ?,
+		updated_at = NOW()
+WHERE id = ?;
+
+-- Admin list users
+SELECT id, first_name, last_name, email, role, is_active, created_at, updated_at
+FROM users
+ORDER BY created_at DESC;
+
+-- Admin update status
+UPDATE users
+SET is_active = ?,
+		updated_at = NOW()
+WHERE id = ?;
+
+-- Admin update role
+UPDATE users
+SET role = ?,
+		updated_at = NOW()
+WHERE id = ?;
+
+
+-- =============================================================
+-- MYSQL: VENUE + EVENT QUERIES
+-- =============================================================
+
+-- List active venues
+SELECT id, name, address, capacity, price_per_hour
+FROM venues
+WHERE active = 1
+ORDER BY name ASC;
+
+-- Event list (public)
+SELECT
+	e.id,
+	e.title,
+	e.category,
+	e.description,
+	e.venue_id,
+	v.name AS venue_name,
+	v.address AS venue_address,
+	v.capacity AS venue_capacity,
+	v.price_per_hour,
+	e.organizer_id,
+	CONCAT(u.first_name, ' ', u.last_name) AS organizer_name,
+	e.start_at,
+	e.end_at,
+	e.capacity,
+	e.seats_booked,
+	GREATEST(e.capacity - e.seats_booked, 0) AS seats_left,
+	e.price,
+	e.status,
+	e.created_at,
+	e.updated_at
+FROM events e
+JOIN venues v ON v.id = e.venue_id
+JOIN users u ON u.id = e.organizer_id
+WHERE e.status = 'PUBLISHED'
+ORDER BY e.start_at ASC;
+
+-- Event list with optional filters (for manager/admin views)
+SELECT
+	e.id,
+	e.title,
+	e.category,
+	e.description,
+	e.venue_id,
+	v.name AS venue_name,
+	e.organizer_id,
+	CONCAT(u.first_name, ' ', u.last_name) AS organizer_name,
+	e.start_at,
+	e.end_at,
+	e.capacity,
+	e.seats_booked,
+	GREATEST(e.capacity - e.seats_booked, 0) AS seats_left,
+	e.price,
+	e.status,
+	e.created_at,
+	e.updated_at
+FROM events e
+JOIN venues v ON v.id = e.venue_id
+JOIN users u ON u.id = e.organizer_id
+WHERE (? IS NULL OR e.category = ?)
+	AND (? IS NULL OR e.status = ?)
+	AND (
+		? IS NULL
+		OR e.title LIKE CONCAT('%', ?, '%')
+		OR e.description LIKE CONCAT('%', ?, '%')
+		OR v.name LIKE CONCAT('%', ?, '%')
+	)
+ORDER BY e.start_at ASC;
+
+-- Event details by id
+SELECT
+	e.id,
+	e.title,
+	e.category,
+	e.description,
+	e.venue_id,
+	v.name AS venue_name,
+	v.address AS venue_address,
+	v.capacity AS venue_capacity,
+	v.price_per_hour,
+	e.organizer_id,
+	CONCAT(u.first_name, ' ', u.last_name) AS organizer_name,
+	e.start_at,
+	e.end_at,
+	e.capacity,
+	e.seats_booked,
+	GREATEST(e.capacity - e.seats_booked, 0) AS seats_left,
+	e.price,
+	e.status,
+	e.created_at,
+	e.updated_at
+FROM events e
+JOIN venues v ON v.id = e.venue_id
+JOIN users u ON u.id = e.organizer_id
+WHERE e.id = ?;
+
+-- Create event
+INSERT INTO events (
+	title, category, description, venue_id, organizer_id,
+	start_at, end_at, capacity, seats_booked, price, status
+)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?);
+
+-- Update event
+UPDATE events
+SET title = ?,
+		category = ?,
+		description = ?,
+		venue_id = ?,
+		start_at = ?,
+		end_at = ?,
+		capacity = ?,
+		price = ?,
+		status = ?,
+		updated_at = NOW()
+WHERE id = ?;
+
+-- Delete event
+DELETE FROM events
+WHERE id = ?;
+
+
+-- =============================================================
+-- MYSQL: ORDER QUERIES
+-- =============================================================
+
+-- Place order safely (transactional)
+-- 1) Lock target event row
+-- 2) Validate in app: status = PUBLISHED and enough seats
+-- 3) Update seat count + insert order
+
+START TRANSACTION;
+
+SELECT id, capacity, seats_booked, price, status
+FROM events
+WHERE id = ?
+FOR UPDATE;
+
+UPDATE events
+SET seats_booked = seats_booked + ?,
+		updated_at = NOW()
+WHERE id = ?;
+
+INSERT INTO orders (
+	user_id, event_id, quantity, total_amount, status, ticket_code
+)
+VALUES (?, ?, ?, ?, 'CONFIRMED', ?);
+
+COMMIT;
+
+-- Rollback version if any validation fails in app:
+-- ROLLBACK;
+
+-- My orders
+SELECT
+	o.id,
+	o.user_id,
+	o.event_id,
+	e.title AS event_title,
+	o.quantity,
+	o.total_amount,
+	o.status,
+	o.ticket_code,
+	o.created_at,
+	o.updated_at
+FROM orders o
+JOIN events e ON e.id = o.event_id
+WHERE o.user_id = ?
+ORDER BY o.created_at DESC;
+
+-- Order by id with access guard in app
+SELECT
+	o.id,
+	o.user_id,
+	o.event_id,
+	e.title AS event_title,
+	o.quantity,
+	o.total_amount,
+	o.status,
+	o.ticket_code,
+	o.created_at,
+	o.updated_at
+FROM orders o
+JOIN events e ON e.id = o.event_id
+WHERE o.id = ?;
+
+-- Cancel order safely (transactional)
+START TRANSACTION;
+
+SELECT id, event_id, quantity, status
+FROM orders
+WHERE id = ?
+FOR UPDATE;
+
+UPDATE orders
+SET status = 'CANCELLED',
+		updated_at = NOW()
+WHERE id = ?
+	AND status <> 'CANCELLED';
+
+UPDATE events e
+JOIN orders o ON o.event_id = e.id
+SET e.seats_booked = GREATEST(e.seats_booked - o.quantity, 0),
+		e.updated_at = NOW()
+WHERE o.id = ?;
+
+COMMIT;
+
+
+-- =============================================================
+-- MYSQL: ASP.NET REPORT QUERIES
+-- =============================================================
+
+-- Summary counts with date-window placeholders
+SELECT COUNT(*) AS users
+FROM users
+WHERE (? IS NULL OR created_at >= ?)
+	AND (? IS NULL OR created_at <= ?);
+
+SELECT COUNT(*) AS events
+FROM events
+WHERE (? IS NULL OR created_at >= ?)
+	AND (? IS NULL OR created_at <= ?);
+
+SELECT COUNT(*) AS orders
+FROM orders
+WHERE (? IS NULL OR created_at >= ?)
+	AND (? IS NULL OR created_at <= ?);
+
+SELECT COUNT(*) AS confirmed_orders
+FROM orders
+WHERE status = 'CONFIRMED'
+	AND (? IS NULL OR created_at >= ?)
+	AND (? IS NULL OR created_at <= ?);
+
+SELECT COUNT(*) AS cancelled_orders
+FROM orders
+WHERE status = 'CANCELLED'
+	AND (? IS NULL OR created_at >= ?)
+	AND (? IS NULL OR created_at <= ?);
+
+SELECT COUNT(*) AS notifications_sent
+FROM notifications
+WHERE (? IS NULL OR created_at >= ?)
+	AND (? IS NULL OR created_at <= ?);
+
+SELECT COALESCE(SUM(total_amount), 0) AS gross_revenue
+FROM orders
+WHERE status = 'CONFIRMED'
+	AND (? IS NULL OR created_at >= ?)
+	AND (? IS NULL OR created_at <= ?);
+
+SELECT COALESCE(SUM(amount), 0) AS total_expenses
+FROM expenses
+WHERE (? IS NULL OR created_at >= ?)
+	AND (? IS NULL OR created_at <= ?);
+
+-- Budget vs actual
+SELECT
+	b.id AS budget_id,
+	b.event_id,
+	COALESCE(e.title, 'Unknown event') AS event_title,
+	b.planned_amount,
+	COALESCE(SUM(x.amount), 0) AS actual_amount,
+	b.planned_amount - COALESCE(SUM(x.amount), 0) AS variance
+FROM budgets b
+LEFT JOIN events e ON e.id = b.event_id
+LEFT JOIN expenses x
+	ON x.event_id = b.event_id
+ AND (? IS NULL OR x.created_at >= ?)
+ AND (? IS NULL OR x.created_at <= ?)
+WHERE (? IS NULL OR b.created_at >= ?)
+	AND (? IS NULL OR b.created_at <= ?)
+GROUP BY b.id, b.event_id, e.title, b.planned_amount
+ORDER BY b.id DESC;
+
+-- Orders by category
+SELECT
+	e.category,
+	COUNT(*) AS order_count
+FROM orders o
+JOIN events e ON e.id = o.event_id
+WHERE o.status = 'CONFIRMED'
+	AND (? IS NULL OR o.created_at >= ?)
+	AND (? IS NULL OR o.created_at <= ?)
+GROUP BY e.category
+ORDER BY order_count DESC, e.category ASC;
+
+-- Insert budget
+INSERT INTO budgets (event_id, planned_amount, note, created_at)
+VALUES (?, ?, ?, NOW());
+
+-- Insert expense
+INSERT INTO expenses (event_id, category, amount, note, created_at)
+VALUES (?, ?, ?, ?, NOW());
+
+
+-- =============================================================
+-- MONGODB: NODE NOTIFICATION QUERIES (RUN IN MONGOSH)
+-- =============================================================
+/*
+use event_notifications;
+
+// Collection (safe create)
+if (db.getCollectionInfos({ name: "notifications" }).length === 0) {
+	db.createCollection("notifications");
+}
+
+// Recommended indexes for current API usage
+db.notifications.createIndex({ recipientUserId: 1 });
+db.notifications.createIndex({ recipient: 1, createdAt: -1 });
+db.notifications.createIndex({ createdAt: -1 });
+db.notifications.createIndex({ status: 1, createdAt: -1 });
+
+
+// -------------------------------------------------------------
+// POST /api/v1/notifications/send
+// -------------------------------------------------------------
+db.notifications.insertOne({
+	type: "GENERIC",
+	recipient: "customer@eventnest.io",
+	recipientUserId: "3",
+	channel: "email",
+	title: "Order confirmed",
+	message: "Order confirmed for Launch Night. Ticket: TKT-ABCD12.",
+	payload: {
+		subject: "Order confirmed",
+		eventTitle: "Launch Night",
+		ticketCode: "TKT-ABCD12"
+	},
+	status: "SENT",
+	isRead: false,
+	readAt: null,
+	error: null,
+	createdAt: new Date(),
+	sentAt: new Date()
+});
+
+
+// -------------------------------------------------------------
+// POST /api/v1/notifications/event-order-created
+// Inserts customer + organizer notifications
+// -------------------------------------------------------------
+db.notifications.insertMany([
+	{
+		type: "ORDER",
+		recipient: "customer@eventnest.io",
+		recipientUserId: "3",
+		channel: "email",
+		title: "Order confirmed",
+		message: "Order confirmed for Launch Night. Ticket: TKT-ABCD12.",
+		payload: { eventTitle: "Launch Night", ticketCode: "TKT-ABCD12", quantity: 2 },
+		status: "SENT",
+		isRead: false,
+		readAt: null,
+		error: null,
+		createdAt: new Date(),
+		sentAt: new Date()
+	},
+	{
+		type: "REGISTRATION",
+		recipient: "organizer@eventnest.io",
+		recipientUserId: "2",
+		channel: "email",
+		title: "New attendee registration",
+		message: "Casey Customer booked 2 ticket(s) for Launch Night.",
+		payload: { eventTitle: "Launch Night", ticketCode: "TKT-ABCD12", quantity: 2 },
+		status: "SENT",
+		isRead: false,
+		readAt: null,
+		error: null,
+		createdAt: new Date(),
+		sentAt: new Date()
+	}
+]);
+
+
+// -------------------------------------------------------------
+// GET /api/v1/notifications/my
+// -------------------------------------------------------------
+db.notifications
+	.find({
+		$or: [
+			{ recipientUserId: "3" },
+			{ recipient: "customer@eventnest.io" }
+		]
+	})
+	.sort({ createdAt: -1 })
+	.limit(100);
+
+
+// -------------------------------------------------------------
+// PATCH /api/v1/notifications/:id/read
+// -------------------------------------------------------------
+db.notifications.findOneAndUpdate(
+	{
+		_id: ObjectId("PUT_NOTIFICATION_ID_HERE"),
+		$or: [
+			{ recipientUserId: "3" },
+			{ recipient: "customer@eventnest.io" }
+		]
+	},
+	{
+		$set: {
+			isRead: true,
+			readAt: new Date()
+		}
+	},
+	{ returnDocument: "after" }
+);
+
+
+// -------------------------------------------------------------
+// PATCH /api/v1/notifications/read-all
+// -------------------------------------------------------------
+db.notifications.updateMany(
+	{
+		$or: [
+			{ recipientUserId: "3" },
+			{ recipient: "customer@eventnest.io" }
+		]
+	},
+	{
+		$set: {
+			isRead: true,
+			readAt: new Date()
+		}
+	}
+);
+
+
+// -------------------------------------------------------------
+// GET /api/v1/notifications/logs
+// -------------------------------------------------------------
+db.notifications.find({}).sort({ createdAt: -1 }).limit(100);
+
+
+// Failed delivery logs
+db.notifications.find({ status: "FAILED" }).sort({ createdAt: -1 });
+
+
+// Lightweight notification analytics
+db.notifications.aggregate([
+	{
+		$group: {
+			_id: { type: "$type", status: "$status" },
+			total: { $sum: 1 }
+		}
+	},
+	{ $sort: { total: -1 } }
+]);
+*/
+
