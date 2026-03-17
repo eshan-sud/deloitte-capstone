@@ -1,6 +1,18 @@
 import { reportsApi } from "./reportsApi";
 import { springApi } from "./springApi";
 
+function getErrorReasonMessage(reason, fallbackMessage) {
+  if (reason instanceof Error && reason.message) {
+    return reason.message;
+  }
+
+  if (typeof reason === "string" && reason.trim()) {
+    return reason;
+  }
+
+  return fallbackMessage;
+}
+
 function sortUpcomingEvents(events = []) {
   return [...events].sort(
     (left, right) => new Date(left.startAt) - new Date(right.startAt),
@@ -18,10 +30,55 @@ export const dashboardApi = {
     }
 
     if (user.role === "ADMIN") {
-      const [report, eventsResponse] = await Promise.all([
+      const [reportResult, eventsResult] = await Promise.allSettled([
         reportsApi.getAdminReports(),
         springApi.getEvents({ status: "ALL", includeDrafts: true }, token),
       ]);
+
+      if (
+        reportResult.status === "rejected" &&
+        eventsResult.status === "rejected"
+      ) {
+        throw new Error("Failed to load admin dashboard data.");
+      }
+
+      const report =
+        reportResult.status === "fulfilled"
+          ? reportResult.value
+          : {
+              summary: {
+                totalUsers: 0,
+                totalEvents: 0,
+                confirmedOrders: 0,
+                grossRevenue: 0,
+                totalExpenses: 0,
+                netRevenue: 0,
+              },
+            };
+
+      const events =
+        eventsResult.status === "fulfilled"
+          ? eventsResult.value?.events || []
+          : [];
+
+      const warningMessages = [];
+      if (reportResult.status === "rejected") {
+        warningMessages.push(
+          `Reporting service: ${getErrorReasonMessage(
+            reportResult.reason,
+            "unavailable",
+          )}`,
+        );
+      }
+
+      if (eventsResult.status === "rejected") {
+        warningMessages.push(
+          `Events service: ${getErrorReasonMessage(
+            eventsResult.reason,
+            "unavailable",
+          )}`,
+        );
+      }
 
       return {
         role: user.role,
@@ -33,9 +90,12 @@ export const dashboardApi = {
           totalExpenses: report.summary.totalExpenses,
           netRevenue: report.summary.netRevenue,
         },
-        upcomingEvents: sortUpcomingEvents(
-          eventsResponse.events.filter(isFutureEvent),
-        ).slice(0, 5),
+        upcomingEvents: sortUpcomingEvents(events.filter(isFutureEvent)).slice(
+          0,
+          5,
+        ),
+        warningMessage:
+          warningMessages.length > 0 ? warningMessages.join(" | ") : "",
       };
     }
 

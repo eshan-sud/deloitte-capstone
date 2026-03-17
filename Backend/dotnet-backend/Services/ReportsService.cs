@@ -18,138 +18,193 @@ public sealed class ReportsService(IConfiguration configuration, ILogger<Reports
     {
         ValidateDateRange(from, to);
 
-        await using var connection = await OpenConnectionAsync(cancellationToken);
-
-        var users = await CountAsync(connection, "users", from, to, cancellationToken);
-        var eventsCount = await CountAsync(connection, "events", from, to, cancellationToken);
-        var orders = await CountAsync(connection, "orders", from, to, cancellationToken);
-        var confirmedOrders = await CountByStatusAsync(connection, "orders", "CONFIRMED", from, to, cancellationToken);
-        var cancelledOrders = await CountByStatusAsync(connection, "orders", "CANCELLED", from, to, cancellationToken);
-        var notificationsSent = await CountAsync(connection, "notifications", from, to, cancellationToken);
-
-        var grossRevenue = await SumAsync(connection, "orders", ["totalAmount", "total_amount", "amount"], "CONFIRMED", from, to, cancellationToken);
-        var totalExpenses = await SumAsync(connection, "expenses", ["amount", "actualAmount", "actual_amount"], null, from, to, cancellationToken);
-
-        return new ReportSummaryDto
+        MySqlConnection connection;
+        try
         {
-            Users = users,
-            Events = eventsCount,
-            Orders = orders,
-            ConfirmedOrders = confirmedOrders,
-            CancelledOrders = cancelledOrders,
-            NotificationsSent = notificationsSent,
-            GrossRevenue = grossRevenue,
-            TotalExpenses = totalExpenses,
-            NetRevenue = grossRevenue - totalExpenses,
-            FromDate = from,
-            ToDate = to,
-            GeneratedAt = DateTimeOffset.UtcNow
-        };
+            connection = await OpenConnectionAsync(cancellationToken);
+        }
+        catch (ReportDataException exception) when (exception.StatusCode == StatusCodes.Status503ServiceUnavailable)
+        {
+            _logger.LogWarning(exception, "Reporting database unavailable while generating summary. Returning empty summary response.");
+            return BuildEmptySummary(from, to);
+        }
+
+        await using (connection)
+        {
+            var users = await CountAsync(connection, "users", from, to, cancellationToken);
+            var eventsCount = await CountAsync(connection, "events", from, to, cancellationToken);
+            var orders = await CountAsync(connection, "orders", from, to, cancellationToken);
+            var confirmedOrders = await CountByStatusAsync(connection, "orders", "CONFIRMED", from, to, cancellationToken);
+            var cancelledOrders = await CountByStatusAsync(connection, "orders", "CANCELLED", from, to, cancellationToken);
+            var notificationsSent = await CountAsync(connection, "notifications", from, to, cancellationToken);
+
+            var grossRevenue = await SumAsync(connection, "orders", ["totalAmount", "total_amount", "amount"], "CONFIRMED", from, to, cancellationToken);
+            var totalExpenses = await SumAsync(connection, "expenses", ["amount", "actualAmount", "actual_amount"], null, from, to, cancellationToken);
+
+            return new ReportSummaryDto
+            {
+                Users = users,
+                Events = eventsCount,
+                Orders = orders,
+                ConfirmedOrders = confirmedOrders,
+                CancelledOrders = cancelledOrders,
+                NotificationsSent = notificationsSent,
+                GrossRevenue = grossRevenue,
+                TotalExpenses = totalExpenses,
+                NetRevenue = grossRevenue - totalExpenses,
+                FromDate = from,
+                ToDate = to,
+                GeneratedAt = DateTimeOffset.UtcNow
+            };
+        }
     }
 
     public async Task<IReadOnlyList<BudgetVarianceRowDto>> GetBudgetVarianceAsync(DateTimeOffset? from, DateTimeOffset? to, CancellationToken cancellationToken)
     {
         ValidateDateRange(from, to);
 
-        await using var connection = await OpenConnectionAsync(cancellationToken);
-
-        if (!await TableExistsAsync(connection, "budgets", cancellationToken))
+        MySqlConnection connection;
+        try
         {
+            connection = await OpenConnectionAsync(cancellationToken);
+        }
+        catch (ReportDataException exception) when (exception.StatusCode == StatusCodes.Status503ServiceUnavailable)
+        {
+            _logger.LogWarning(exception, "Reporting database unavailable while generating budget variance. Returning empty response.");
             return [];
         }
 
-        var budgetIdColumn = await ResolveColumnAsync(connection, "budgets", ["id", "budgetId", "budget_id"], cancellationToken)
-            ?? throw new ReportDataException("Budgets table is missing a supported budget id column.");
-
-        var budgetEventIdColumn = await ResolveColumnAsync(connection, "budgets", ["eventId", "event_id"], cancellationToken)
-            ?? throw new ReportDataException("Budgets table is missing a supported event reference column.");
-
-        var plannedAmountColumn = await ResolveColumnAsync(connection, "budgets", ["plannedAmount", "planned_amount", "amount"], cancellationToken)
-            ?? throw new ReportDataException("Budgets table is missing a supported planned amount column.");
-
-        var budgetDateColumn = await ResolveColumnAsync(connection, "budgets", DateColumnCandidates, cancellationToken);
-
-        var budgetSql = new StringBuilder($"SELECT `{budgetIdColumn}`, `{budgetEventIdColumn}`, CAST(`{plannedAmountColumn}` AS DECIMAL(18,2)) FROM `budgets`");
-        await using var budgetCommand = connection.CreateCommand();
-        AppendDateClause(budgetSql, budgetCommand, budgetDateColumn, from, to);
-
-        budgetCommand.CommandText = budgetSql.ToString();
-
-        var budgets = new List<(string BudgetId, string EventId, decimal PlannedAmount)>();
-        await using (var budgetReader = await budgetCommand.ExecuteReaderAsync(cancellationToken))
+        await using (connection)
         {
-            while (await budgetReader.ReadAsync(cancellationToken))
+            if (!await TableExistsAsync(connection, "budgets", cancellationToken))
             {
-                var budgetId = budgetReader.IsDBNull(0) ? string.Empty : budgetReader.GetValue(0).ToString() ?? string.Empty;
-                var eventId = budgetReader.IsDBNull(1) ? string.Empty : budgetReader.GetValue(1).ToString() ?? string.Empty;
-                var plannedAmount = budgetReader.IsDBNull(2)
-                    ? 0m
-                    : Convert.ToDecimal(budgetReader.GetValue(2), CultureInfo.InvariantCulture);
-
-                budgets.Add((budgetId, eventId, plannedAmount));
+                return [];
             }
-        }
 
-        if (budgets.Count == 0)
-        {
-            return [];
-        }
+            var budgetIdColumn = await ResolveColumnAsync(connection, "budgets", ["id", "budgetId", "budget_id"], cancellationToken)
+                ?? throw new ReportDataException("Budgets table is missing a supported budget id column.");
 
-        var eventTitles = await LoadEventTitlesAsync(connection, cancellationToken);
-        var expenseTotals = await LoadExpenseTotalsAsync(connection, from, to, cancellationToken);
+            var budgetEventIdColumn = await ResolveColumnAsync(connection, "budgets", ["eventId", "event_id"], cancellationToken)
+                ?? throw new ReportDataException("Budgets table is missing a supported event reference column.");
 
-        var rows = budgets
-            .Select(budget =>
+            var plannedAmountColumn = await ResolveColumnAsync(connection, "budgets", ["plannedAmount", "planned_amount", "amount"], cancellationToken)
+                ?? throw new ReportDataException("Budgets table is missing a supported planned amount column.");
+
+            var budgetDateColumn = await ResolveColumnAsync(connection, "budgets", DateColumnCandidates, cancellationToken);
+
+            var budgetSql = new StringBuilder($"SELECT `{budgetIdColumn}`, `{budgetEventIdColumn}`, CAST(`{plannedAmountColumn}` AS DECIMAL(18,2)) FROM `budgets`");
+            await using var budgetCommand = connection.CreateCommand();
+            AppendDateClause(budgetSql, budgetCommand, budgetDateColumn, from, to);
+
+            budgetCommand.CommandText = budgetSql.ToString();
+
+            var budgets = new List<(string BudgetId, string EventId, decimal PlannedAmount)>();
+            await using (var budgetReader = await budgetCommand.ExecuteReaderAsync(cancellationToken))
             {
-                expenseTotals.TryGetValue(budget.EventId, out var actualAmount);
-                eventTitles.TryGetValue(budget.EventId, out var eventTitle);
-
-                return new BudgetVarianceRowDto
+                while (await budgetReader.ReadAsync(cancellationToken))
                 {
-                    BudgetId = budget.BudgetId,
-                    EventId = budget.EventId,
-                    EventTitle = string.IsNullOrWhiteSpace(eventTitle) ? "Unknown event" : eventTitle,
-                    PlannedAmount = budget.PlannedAmount,
-                    ActualAmount = actualAmount
-                };
-            })
-            .ToList();
+                    var budgetId = budgetReader.IsDBNull(0) ? string.Empty : budgetReader.GetValue(0).ToString() ?? string.Empty;
+                    var eventId = budgetReader.IsDBNull(1) ? string.Empty : budgetReader.GetValue(1).ToString() ?? string.Empty;
+                    var plannedAmount = budgetReader.IsDBNull(2)
+                        ? 0m
+                        : Convert.ToDecimal(budgetReader.GetValue(2), CultureInfo.InvariantCulture);
 
-        return rows;
+                    budgets.Add((budgetId, eventId, plannedAmount));
+                }
+            }
+
+            if (budgets.Count == 0)
+            {
+                return [];
+            }
+
+            var eventTitles = await LoadEventTitlesAsync(connection, cancellationToken);
+            var expenseTotals = await LoadExpenseTotalsAsync(connection, from, to, cancellationToken);
+
+            var rows = budgets
+                .Select(budget =>
+                {
+                    expenseTotals.TryGetValue(budget.EventId, out var actualAmount);
+                    eventTitles.TryGetValue(budget.EventId, out var eventTitle);
+
+                    return new BudgetVarianceRowDto
+                    {
+                        BudgetId = budget.BudgetId,
+                        EventId = budget.EventId,
+                        EventTitle = string.IsNullOrWhiteSpace(eventTitle) ? "Unknown event" : eventTitle,
+                        PlannedAmount = budget.PlannedAmount,
+                        ActualAmount = actualAmount
+                    };
+                })
+                .ToList();
+
+            return rows;
+        }
     }
 
     public async Task<IReadOnlyList<OrderCategoryCountDto>> GetOrderCountsByCategoryAsync(DateTimeOffset? from, DateTimeOffset? to, CancellationToken cancellationToken)
     {
         ValidateDateRange(from, to);
 
-        await using var connection = await OpenConnectionAsync(cancellationToken);
-
-        var eventCategories = await LoadEventCategoriesAsync(connection, cancellationToken);
-        if (eventCategories.Count == 0)
+        MySqlConnection connection;
+        try
         {
+            connection = await OpenConnectionAsync(cancellationToken);
+        }
+        catch (ReportDataException exception) when (exception.StatusCode == StatusCodes.Status503ServiceUnavailable)
+        {
+            _logger.LogWarning(exception, "Reporting database unavailable while generating order categories. Returning empty response.");
             return [];
         }
 
-        var countsByEventId = await LoadConfirmedOrderCountsByEventIdAsync(connection, from, to, cancellationToken);
-        if (countsByEventId.Count == 0)
+        await using (connection)
         {
-            return [];
-        }
-
-        return countsByEventId
-            .GroupBy(
-                entry => eventCategories.TryGetValue(entry.Key, out var category) && !string.IsNullOrWhiteSpace(category)
-                    ? category
-                    : "Uncategorized",
-                StringComparer.OrdinalIgnoreCase)
-            .Select(group => new OrderCategoryCountDto
+            var eventCategories = await LoadEventCategoriesAsync(connection, cancellationToken);
+            if (eventCategories.Count == 0)
             {
-                Category = group.Key,
-                Count = group.Sum(entry => entry.Value)
-            })
-            .OrderByDescending(entry => entry.Count)
-            .ThenBy(entry => entry.Category)
-            .ToList();
+                return [];
+            }
+
+            var countsByEventId = await LoadConfirmedOrderCountsByEventIdAsync(connection, from, to, cancellationToken);
+            if (countsByEventId.Count == 0)
+            {
+                return [];
+            }
+
+            return countsByEventId
+                .GroupBy(
+                    entry => eventCategories.TryGetValue(entry.Key, out var category) && !string.IsNullOrWhiteSpace(category)
+                        ? category
+                        : "Uncategorized",
+                    StringComparer.OrdinalIgnoreCase)
+                .Select(group => new OrderCategoryCountDto
+                {
+                    Category = group.Key,
+                    Count = group.Sum(entry => entry.Value)
+                })
+                .OrderByDescending(entry => entry.Count)
+                .ThenBy(entry => entry.Category)
+                .ToList();
+        }
+    }
+
+    private static ReportSummaryDto BuildEmptySummary(DateTimeOffset? from, DateTimeOffset? to)
+    {
+        return new ReportSummaryDto
+        {
+            Users = 0,
+            Events = 0,
+            Orders = 0,
+            ConfirmedOrders = 0,
+            CancelledOrders = 0,
+            NotificationsSent = 0,
+            GrossRevenue = 0m,
+            TotalExpenses = 0m,
+            NetRevenue = 0m,
+            FromDate = from,
+            ToDate = to,
+            GeneratedAt = DateTimeOffset.UtcNow
+        };
     }
 
     public async Task<long> CreateBudgetAsync(CreateBudgetRequest request, CancellationToken cancellationToken)

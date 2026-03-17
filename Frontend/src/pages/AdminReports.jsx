@@ -40,12 +40,20 @@ function AdminReports() {
   }, []);
 
   const maxCategoryValue = useMemo(() => {
-    if (!report) {
+    if (!report || typeof report.ordersByCategory !== "object") {
       return 1;
     }
 
     const values = Object.values(report.ordersByCategory);
     return Math.max(...values, 1);
+  }, [report]);
+
+  const categoryEntries = useMemo(() => {
+    if (!report || typeof report.ordersByCategory !== "object") {
+      return [];
+    }
+
+    return Object.entries(report.ordersByCategory);
   }, [report]);
 
   return (
@@ -106,22 +114,23 @@ function AdminReports() {
             <section className="card" style={{ marginBottom: "1rem" }}>
               <h2 className="panel-title">Orders By Event Category</h2>
               <div className="category-list">
-                {Object.entries(report.ordersByCategory).map(
-                  ([category, count]) => (
-                    <div className="category-row" key={category}>
-                      <span className="category-name">{category}</span>
-                      <div className="category-bar-wrap">
-                        <div
-                          className="category-bar"
-                          style={{
-                            width: `${Math.round((count / maxCategoryValue) * 100)}%`,
-                          }}
-                        />
-                      </div>
-                      <span className="category-count">{count}</span>
+                {categoryEntries.map(([category, count]) => (
+                  <div className="category-row" key={category}>
+                    <span className="category-name">{category}</span>
+                    <div className="category-bar-wrap">
+                      <div
+                        className="category-bar"
+                        style={{
+                          width: `${Math.round((count / maxCategoryValue) * 100)}%`,
+                        }}
+                      />
                     </div>
-                  ),
-                )}
+                    <span className="category-count">{count}</span>
+                  </div>
+                ))}
+                {categoryEntries.length === 0 ? (
+                  <p className="muted">No category order data available.</p>
+                ) : null}
               </div>
             </section>
 

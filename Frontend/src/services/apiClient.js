@@ -57,8 +57,18 @@ export function getErrorMessage(error) {
     return responseData.errors.join(", ");
   }
 
-  if (responseData && typeof responseData.errors === "object") {
-    return Object.values(responseData.errors).flat().filter(Boolean).join(", ");
+  if (
+    responseData?.errors &&
+    typeof responseData.errors === "object" &&
+    !Array.isArray(responseData.errors)
+  ) {
+    const nestedErrors = Object.values(responseData.errors)
+      .flatMap((value) => (Array.isArray(value) ? value : [value]))
+      .filter((value) => typeof value === "string" && value.trim());
+
+    if (nestedErrors.length > 0) {
+      return nestedErrors.join(", ");
+    }
   }
 
   if (typeof responseData?.message === "string" && responseData.message) {

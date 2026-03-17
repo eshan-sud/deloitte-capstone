@@ -159,6 +159,9 @@ function Dashboard() {
         </div>
 
         {error ? <div className="alert error">{error}</div> : null}
+        {!error && summary?.warningMessage ? (
+          <div className="alert">{summary.warningMessage}</div>
+        ) : null}
 
         {isLoading ? (
           <div className="card">
@@ -201,7 +204,8 @@ function Dashboard() {
                         {formatDateTime(event.startAt)}
                       </p>
                       <p className="list-item-meta">
-                        {event.venue?.name} | {event.seatsLeft} seats left
+                        {event.venue?.name || "Venue TBD"} |{" "}
+                        {Number(event.seatsLeft || 0)} seats left
                       </p>
                     </div>
                     <div className="list-actions">
