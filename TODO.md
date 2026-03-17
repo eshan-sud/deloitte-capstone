@@ -140,37 +140,37 @@ Status legend:
 
 ## Project-wide / Docs / DevOps
 
-- [ ] User module is fully complete with user management endpoints
+- [x] User module is fully complete with user management endpoints
 - [ ] At least 2-3 non-user modules are fully implemented end-to-end
 - [ ] Full documentation pack is complete for submission
 - [ ] Application is dockerized & runnable with one command
 - [ ] Login is connected to live backend API
 - [ ] Signup is connected to live backend API
 - [ ] Event CRUD pages are connected to backend APIs
-- [ ] User entity & repository exist
-- [ ] Validation annotations exist on auth DTOs
-- [ ] Global exception handling exists
-- [ ] Role model (admin/organizer/customer) exists beyond default ROLE_USER
-- [ ] Middleware hardening exists (`cors`, `helmet`, `compression`, `morgan`, rate limiter)
-- [ ] OpenAPI is enabled in development
-- [ ] CORS policy for frontend origins exists
+- [x] User entity & repository exist
+- [x] Validation annotations exist on auth DTOs
+- [x] Global exception handling exists
+- [x] Role model (admin/organizer/customer) exists beyond default ROLE_USER
+- [x] Middleware hardening exists (`cors`, `helmet`, `compression`, `morgan`, rate limiter)
+- [x] OpenAPI is enabled in development
+- [x] CORS policy for frontend origins exists
 - [ ] Database SQL is aligned to event management domain (current script still banking-focused)
 - [ ] Dockerfiles for services exist
 - [ ] `docker-compose.yml` exists
 - [ ] Postman collection exists
 - [ ] OpenAPI export/package for all services exists
 - [ ] ER diagram, wireframes, & user-flow docs are finalized in submission format
-- [ ] Frontend checkout page & order history page
+- [x] Frontend checkout page & order history page
 - [ ] Notification logs table & persistence
-- [ ] `/` Home
-- [ ] `/events` Events list (mock data, filterable)
-- [ ] `/dashboard` Dashboard (mock data, role-aware)
-- [ ] `/login` Login UI
-- [ ] `/signup` Signup UI
-- [ ] `/events/:id` Event details
-- [ ] `/checkout/:eventId` Ticket booking / checkout (UI, mock)
-- [ ] `/my-orders` User order history (UI, mock)
-- [ ] `/notifications` Notification center (UI, mock)
+- [x] `/` Home
+- [x] `/events` Events list (mock data, filterable)
+- [x] `/dashboard` Dashboard (mock data, role-aware)
+- [x] `/login` Login UI
+- [x] `/signup` Signup UI
+- [x] `/events/:id` Event details
+- [x] `/checkout/:eventId` Ticket booking / checkout (UI, mock)
+- [x] `/my-orders` User order history (UI, mock)
+- [x] `/notifications` Notification center (UI, mock)
 - [ ] Freeze final module list & service ownership in README
 - [ ] Replace `Database/queries.sql` with event-management schema:
 - [ ] Add indexes & foreign keys
@@ -188,11 +188,11 @@ Status legend:
 - [ ] Update endpoint documentation with auth request/response samples
 - [ ] Capture auth screenshots (login, signup, profile)
 - [ ] Add search, filtering, & pagination
-- [ ] Add new Event Details page (`/events/:id`)
+- [x] Add new Event Details page (`/events/:id`)
 - [ ] Add field validation (date/time/capacity/title uniqueness per organizer)
 - [ ] Capture event list/create/edit/detail screenshots
-- [ ] Create checkout page (`/checkout/:eventId`)
-- [ ] Create my orders page (`/my-orders`)
+- [x] Create checkout page (`/checkout/:eventId`)
+- [x] Create my orders page (`/my-orders`)
 - [ ] Add order validation & cancellation edge case handling
 - [ ] Update attendee/ticketing flow documentation
 - [ ] Capture checkout & order history screenshots
