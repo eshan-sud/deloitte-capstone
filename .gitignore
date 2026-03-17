@@ -69,3 +69,16 @@ Backend/spring-backend/.vscode/
 Backend/spring-backend/.DS_Store
 Backend/spring-backend/.env
 Backend/spring-backend/application-local.properties
+
+# dotnet-backend
+Backend/dotnet-backend/bin/
+Backend/dotnet-backend/obj/
+Backend/dotnet-backend/.env/
+Backend/dotnet-backend/.vscode/
+Backend/dotnet-backend/.idea/
+Backend/dotnet-backend/*.suo
+Backend/dotnet-backend/*.ntvs*
+Backend/dotnet-backend/*.njsproj
+Backend/dotnet-backend/*.sln
+Backend/dotnet-backend/*.sw?
+Backend/dotnet-backend/.DS_Store

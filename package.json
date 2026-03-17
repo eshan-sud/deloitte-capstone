@@ -5,15 +5,15 @@
   "private": true,
   "scripts": {
     "install-all": "npm install && cd Frontend && npm install && cd ../Backend/node-backend && npm install && cd ../..",
-    "start-project": "concurrently \"npm run start:spring\" \"npm run start:aspnet\" \"npm run start:node\" \"npm run start:frontend\" --names \"Spring,ASP.NET,Node,Frontend\" --prefix \"[{name}]\" --kill-others-on-exit",
+    "start-project": "concurrently \"npm run start:spring\" \"npm run start:dotnet\" \"npm run start:node\" \"npm run start:frontend\" --names \"Spring,ASP.NET,Node,Frontend\" --prefix \"[{name}]\" --kill-others-on-exit",
     "start:spring": "cd Backend/spring-backend && mvn spring-boot:run",
-    "start:aspnet": "cd Backend/aspnet-backend && dotnet run",
+    "start:dotnet": "cd Backend/dotnet-backend && dotnet run",
     "start:node": "cd Backend/node-backend && npm start",
     "start:frontend": "cd Frontend && npm run dev",
-    "build-all": "npm run build:frontend && npm run build:spring && npm run build:aspnet",
+    "build-all": "npm run build:frontend && npm run build:spring && npm run build:dotnet",
     "build:frontend": "cd Frontend && npm run build",
     "build:spring": "cd Backend/spring-backend && mvn -DskipTests package",
-    "build:aspnet": "cd Backend/aspnet-backend && dotnet build",
+    "build:dotnet": "cd Backend/dotnet-backend && dotnet build",
     "build:node": "cd Backend/node-backend && node --check src/server.js && node --check src/db.js"
   },
   "devDependencies": {

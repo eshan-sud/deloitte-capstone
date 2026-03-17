@@ -52,7 +52,7 @@ INDIVIDUAL SERVICE STARTUP (if needed)
 ============================================================================
 
 - Spring Boot: `npm run start:spring` (or: cd Backend/spring-backend && mvn spring-boot:run)
-- ASP.NET: `npm run start:aspnet` (or: cd Backend/aspnet-backend && dotnet run)
+- ASP.NET: `npm run start:dotnet` (or: cd Backend/dotnet-backend && dotnet run)
 - Node: `npm run start:node` (or: cd Backend/node-backend && npm start)
 - Frontend: `npm run start:frontend` (or: cd Frontend && npm run dev)
 
@@ -63,7 +63,7 @@ BUILD COMMANDS
 - Build all: `npm run build-all`
 - Build frontend: `npm run build:frontend` (or: `cd Frontend && npm run build`)
 - Build Spring: `npm run build:spring` (or: `cd Backend/spring-backend && mvn -DskipTests package`)
-- Build ASP.NET: `npm run build:aspnet` (or: `cd Backend/aspnet-backend && dotnet build`)
+- Build ASP.NET: `npm run build:dotnet` (or: `cd Backend/dotnet-backend && dotnet build`)
 - Check Node: `npm run build:node` (or: `cd Backend/node-backend && node --check src/server.js`)
 
 ## Setup
@@ -116,7 +116,7 @@ cd ..
 ```
 
 ```bash
-cd Backend/aspnet-backend
+cd Backend/dotnet-backend
 dotnet restore
 dotnet run
 cd ..

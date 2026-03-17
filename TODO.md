@@ -39,58 +39,58 @@ Status legend:
 
 ## Backend (Spring)
 
-- [ ] User module has basic registration/login/JWT backend foundation
-- [ ] Spring Boot service is configured with MySQL + JPA
-- [ ] JWT auth flow exists (token provider + filter + security config)
-- [ ] `POST /api/auth/register` exists
-- [ ] `POST /api/auth/login` exists
-- [ ] `GET /api/auth/me` exists
-- [ ] `GET /api/auth/health` exists
-- [ ] `PUT /api/users/me` exists
-- [ ] `GET /api/auth/users` exists
+- [x] User module has basic registration/login/JWT backend foundation
+- [x] Spring Boot service is configured with MySQL + JPA
+- [x] JWT auth flow exists (token provider + filter + security config)
+- [x] `POST /api/auth/register` exists
+- [x] `POST /api/auth/login` exists
+- [x] `GET /api/auth/me` exists
+- [x] `GET /api/auth/health` exists
+- [x] `PUT /api/users/me` exists
+- [x] `GET /api/auth/users` exists
 - [ ] `GET /api/users/{id}` exists
-- [ ] `PATCH /api/auth/users/{id}/status` exists
-- [ ] Event module (entities + CRUD + search) exists
-- [ ] Attendee/registration module exists
-- [ ] Order/ticketing module exists
+- [x] `PATCH /api/auth/users/{id}/status` exists
+- [x] Event module (entities + CRUD + search) exists
+- [x] Attendee/registration module exists
+- [x] Order/ticketing module exists
 - [ ] Integration tests exist
-- [ ] Register user (`POST /api/auth/register`)
-- [ ] Login user with JWT (`POST /api/auth/login`)
-- [ ] Current user (`GET /api/auth/me`)
-- [ ] Update profile (`PUT /api/users/me`)
-- [ ] List users for admin (`GET /api/auth/users`)
+- [x] Register user (`POST /api/auth/register`)
+- [x] Login user with JWT (`POST /api/auth/login`)
+- [x] Current user (`GET /api/auth/me`)
+- [x] Update profile (`PUT /api/users/me`)
+- [x] List users for admin (`GET /api/auth/users`)
 - [ ] User detail (`GET /api/users/{id}`)
-- [ ] User activation/deactivation (`PATCH /api/auth/users/{id}/status`)
-- [ ] Role-based authorization (ADMIN/ORGANIZER/CUSTOMER)
-- [ ] User role update (`PATCH /api/auth/users/{id}/role`)
-- [ ] Create event (`POST /api/events`)
-- [ ] List/search events (`GET /api/events?query=&category=&status=&includeDrafts=`)
-- [ ] Get event details (`GET /api/events/{id}`)
-- [ ] Update event (`PUT /api/events/{id}`)
-- [ ] Delete event (`DELETE /api/events/{id}`)
+- [x] User activation/deactivation (`PATCH /api/auth/users/{id}/status`)
+- [x] Role-based authorization (ADMIN/ORGANIZER/CUSTOMER)
+- [x] User role update (`PATCH /api/auth/users/{id}/role`)
+- [x] Create event (`POST /api/events`)
+- [x] List/search events (`GET /api/events?query=&category=&status=&includeDrafts=`)
+- [x] Get event details (`GET /api/events/{id}`)
+- [x] Update event (`PUT /api/events/{id}`)
+- [x] Delete event (`DELETE /api/events/{id}`)
 - [ ] Venue availability check (`GET /api/venues/availability`)
-- [ ] Organizer ownership check for update/delete
-- [ ] Event status workflow (DRAFT, PUBLISHED, CLOSED, CANCELLED)
-- [ ] Register attendee / place order (`POST /api/orders`)
-- [ ] View current user orders (`GET /api/orders/my`)
-- [ ] View order details (`GET /api/orders/{id}`)
-- [ ] Cancel order (`PATCH /api/orders/{id}/cancel`)
-- [ ] Capacity validation to prevent oversell
-- [ ] Ticket issuance metadata (ticket code/QR placeholder)
-- [ ] `/create-event` Create event form (UI, create/edit)
-- [ ] Add user management endpoints in Spring Boot (`/api/users/me`, `/api/auth/users/...`)
-- [ ] Add role fields & role checks (ADMIN/ORGANIZER/CUSTOMER)
-- [ ] Add profile update flow
+- [x] Organizer ownership check for update/delete
+- [x] Event status workflow (DRAFT, PUBLISHED, CLOSED, CANCELLED)
+- [x] Register attendee / place order (`POST /api/orders`)
+- [x] View current user orders (`GET /api/orders/my`)
+- [x] View order details (`GET /api/orders/{id}`)
+- [x] Cancel order (`PATCH /api/orders/{id}/cancel`)
+- [x] Capacity validation to prevent oversell
+- [x] Ticket issuance metadata (ticket code/QR placeholder)
+- [x] `/create-event` Create event form (UI, create/edit)
+- [x] Add user management endpoints in Spring Boot (`/api/users/me`, `/api/auth/users/...`)
+- [x] Add role fields & role checks (ADMIN/ORGANIZER/CUSTOMER)
+- [x] Add profile update flow
 - [ ] Store JWT & user data in auth context/local storage
 - [ ] Register -> Login -> Dashboard works using real backend JWT
-- [ ] Create Event & Venue entities, repositories, services, controllers
-- [ ] Implement event CRUD endpoints
-- [ ] Add ownership & authorization checks for event modifications
+- [x] Create Event & Venue entities, repositories, services, controllers
+- [x] Implement event CRUD endpoints
+- [x] Add ownership & authorization checks for event modifications
 - [ ] Update features document for Event module
 - [ ] Organizer can create/update/delete events & public users can view them
-- [ ] Create order/ticket entities & business rules
-- [ ] Implement order endpoints (`create`, `my`, `by-id`, `cancel`)
-- [ ] Add oversell protection (capacity check + transaction safety)
+- [x] Create order/ticket entities & business rules
+- [x] Implement order endpoints (`create`, `my`, `by-id`, `cancel`)
+- [x] Add oversell protection (capacity check + transaction safety)
 - [ ] Add Dockerfile for spring-backend
 
 ## Backend (Node)
@@ -200,7 +200,7 @@ Status legend:
 - [ ] User can register/book event & receive notification record
 - [ ] Update module details doc with reporting formulas & assumptions
 - [ ] Add Dockerfile for frontend
-- [ ] Add Dockerfile for aspnet-backend
+- [ ] Add Dockerfile for dotnet-backend
 - [ ] Create `docker-compose.yml` with MySQL + all services
 - [ ] Add health checks & startup dependencies
 - [ ] Run smoke tests for all key user journeys
