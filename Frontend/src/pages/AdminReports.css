@@ -1,0 +1,46 @@
+.category-list {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.category-row {
+  display: grid;
+  grid-template-columns: 160px 1fr 56px;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.category-name {
+  font-weight: 600;
+  color: #4a5e62;
+}
+
+.category-bar-wrap {
+  height: 0.7rem;
+  border-radius: 999px;
+  background: rgba(74, 94, 98, 0.15);
+  overflow: hidden;
+}
+
+.category-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #2d6f67, #da5b2b);
+  border-radius: inherit;
+}
+
+.category-count {
+  text-align: right;
+  font-weight: 700;
+  color: #24393c;
+}
+
+@media (max-width: 720px) {
+  .category-row {
+    grid-template-columns: 1fr;
+    gap: 0.4rem;
+  }
+
+  .category-count {
+    text-align: left;
+  }
+}

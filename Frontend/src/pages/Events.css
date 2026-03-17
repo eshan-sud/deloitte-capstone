@@ -1,0 +1,140 @@
+.events-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.events-toolbar {
+  margin: 1.2rem 0 1.4rem;
+  display: grid;
+  gap: 0.9rem;
+}
+
+.events-search label,
+.events-status-filter label {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-bottom: 0.3rem;
+}
+
+.toolbar-input {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 0.65rem 0.75rem;
+  color: var(--ink);
+  background: #fff;
+}
+
+.toolbar-input:focus {
+  outline: none;
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px rgba(234, 91, 45, 0.16);
+}
+
+.events-filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.chip {
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+  border-radius: 999px;
+  padding: 0.45rem 0.9rem;
+  font-size: 0.88rem;
+}
+
+.chip.active {
+  background: var(--ink);
+  color: #fff;
+  border-color: var(--ink);
+}
+
+.event-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.events-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.event-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.event-card h3 {
+  font-size: 1.1rem;
+}
+
+.event-category {
+  align-self: flex-start;
+  background: #fff3e7;
+  color: var(--brand-deep);
+  border: 1px solid #ffd0ab;
+  border-radius: 999px;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.event-meta {
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.event-venue {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.event-description {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.event-footer {
+  margin-top: 0.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.event-actions {
+  margin-top: auto;
+  display: flex;
+  gap: 0.55rem;
+  flex-wrap: wrap;
+}
+
+.event-actions .btn {
+  flex: 1;
+  text-align: center;
+}
+
+@media (max-width: 960px) {
+  .events-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .events-grid {
+    grid-template-columns: 1fr;
+  }
+}
