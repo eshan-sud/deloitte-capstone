@@ -4,7 +4,7 @@ services:
     container_name: event-management-mysql
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD:-1234}"
+      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
       MYSQL_DATABASE: "${MYSQL_DATABASE:-event_management}"
     ports:
       - "3306:3306"
@@ -52,7 +52,7 @@ services:
       SPRING_PROFILES_ACTIVE: "${SPRING_PROFILES_ACTIVE:-dev}"
       SPRING_DATASOURCE_URL: "${SPRING_DATASOURCE_URL:-jdbc:mysql://mysql:3306/event_management?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}"
       SPRING_DATASOURCE_USERNAME: "${SPRING_DATASOURCE_USERNAME:-root}"
-      SPRING_DATASOURCE_PASSWORD: "${SPRING_DATASOURCE_PASSWORD:-1234}"
+      SPRING_DATASOURCE_PASSWORD: "${SPRING_DATASOURCE_PASSWORD}"
       SPRING_JPA_HIBERNATE_DIALECT: "${SPRING_JPA_HIBERNATE_DIALECT:-org.hibernate.dialect.MySQLDialect}"
     ports:
       - "8080:8080"
@@ -74,9 +74,10 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: "${ASPNETCORE_ENVIRONMENT:-Development}"
       ASPNETCORE_URLS: "${ASPNETCORE_URLS:-http://+:8080}"
-      ConnectionStrings__DefaultConnection: "${ASPNET_CONNECTION_STRING:-Server=mysql;Port=3306;Database=event_management;Uid=root;Pwd=1234;}"
+      ConnectionStrings__DefaultConnection: "${ASPNET_CONNECTION_STRING}"
       Cors__AllowedOrigins__0: "${CORS_ALLOWED_ORIGIN_0:-http://localhost:5173}"
       Cors__AllowedOrigins__1: "${CORS_ALLOWED_ORIGIN_1:-http://localhost:3000}"
+      Reporting__AdminApiKey: "${REPORTING_ADMIN_API_KEY}"
     ports:
       - "5107:8080"
     depends_on:
@@ -99,7 +100,7 @@ services:
       - ./Backend/node-backend/.env
     environment:
       # Override DB host for container-to-container networking in compose.
-      DB_URI: "${NODE_DB_URI:-mongodb://mongo:27017/event_notifications}"
+      DB_URI: "${NODE_DB_URI}"
     ports:
       - "4000:4000"
     depends_on:
@@ -119,6 +120,7 @@ services:
         VITE_SPRING_API_URL: "${VITE_SPRING_API_URL:-http://localhost:8080/api}"
         VITE_ASPNET_API_URL: "${VITE_ASPNET_API_URL:-http://localhost:5107/api}"
         VITE_NODE_API_URL: "${VITE_NODE_API_URL:-http://localhost:4000/api}"
+        VITE_REPORTS_ADMIN_KEY: "${VITE_REPORTS_ADMIN_KEY}"
     container_name: event-management-frontend
     restart: unless-stopped
     ports:

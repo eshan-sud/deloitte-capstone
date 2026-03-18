@@ -86,7 +86,7 @@ Status legend:
 - [x] Create Event & Venue entities, repositories, services, controllers
 - [x] Implement event CRUD endpoints
 - [x] Add ownership & authorization checks for event modifications
-- [ ] Update features document for Event module
+- [x] Update features document for Event module
 - [x] Organizer can create/update/delete events & public users can view them
 - [x] Create order/ticket entities & business rules
 - [x] Implement order endpoints (`create`, `my`, `by-id`, `cancel`)
@@ -134,7 +134,7 @@ Status legend:
 - [x] Add date-range filter support for reports
 - [x] Show key KPIs: total events, attendees, orders, revenue, expense, net
 - [x] Add input validation for budget/expense entries
-- [ ] Add basic auth guard for admin reporting routes
+- [x] Add basic auth guard for admin reporting routes
 - [ ] Capture reporting screenshots
 - [x] Admin can view real report metrics & budget summary
 
@@ -171,21 +171,21 @@ Status legend:
 - [x] `/checkout/:eventId` Ticket booking / checkout (UI, mock)
 - [x] `/my-orders` User order history (UI, mock)
 - [x] `/notifications` Notification center (UI, mock)
-- [ ] Freeze final module list & service ownership in README
+- [x] Freeze final module list & service ownership in README
 - [x] Replace `Database/queries.sql` with event-management schema:
 - [x] Add indexes & foreign keys
 - [x] Add seed data script for demo
-- [ ] Define unified API response envelope (`success`, `message`, `data`, `errors`, `timestamp`)
-- [ ] Finalize endpoint map for all three backend services
+- [x] Define unified API response envelope (`success`, `message`, `data`, `errors`, `timestamp`)
+- [x] Finalize endpoint map for all three backend services
 - [ ] Create ER diagram (v1)
 - [ ] Create architecture diagram (HLD v1)
 - [ ] Create page-route-to-endpoint mapping sheet (v1)
 - [ ] DB schema approved & runnable
-- [ ] Every page is mapped to an endpoint/service
+- [x] Every page is mapped to an endpoint/service
 - [x] Add protected route wrapper & logout flow
 - [x] Add backend validation coverage for auth & profile update
 - [ ] Add Postman folder for auth & user management
-- [ ] Update endpoint documentation with auth request/response samples
+- [x] Update endpoint documentation with auth request/response samples
 - [ ] Capture auth screenshots (login, signup, profile)
 - [ ] Add search, filtering, & pagination
 - [x] Add new Event Details page (`/events/:id`)
@@ -203,17 +203,16 @@ Status legend:
 - [x] Add Dockerfile for dotnet-backend
 - [x] Create `docker-compose.yml` with MySQL + all services
 - [x] Add health checks & startup dependencies
-- [ ] Run smoke tests for all key user journeys
+- [x] Run smoke tests for all key user journeys
 - [x] Run endpoint sanity tests across all services
-- [ ] Fix blocker & major severity bugs only
+- [x] Fix blocker & major severity bugs only
 - [ ] Features & module details document (final)
 - [ ] Backend endpoints document (final)
 - [ ] ER diagram (final)
 - [ ] Wireframe document (final)
 - [ ] User flow document (final)
-- [ ] GitHub source link in final report
 - [ ] Docker run instructions in root README
-- [ ] OpenAPI spec bundle
+- [x] OpenAPI spec bundle
 - [ ] Postman collection export
 - [ ] curl examples for core flows
 - [ ] `docker compose up` brings up complete demo stack
@@ -226,7 +225,6 @@ Status legend:
 - [ ] Wireframe design documents
 - [ ] User flow documents
 - [ ] Dockerization proof (compose file + run output screenshots)
-- [ ] Any additional supporting notes (assumptions, known limitations)
 - [ ] Clean, consistent API responses across all services
 - [x] Role-based access control for admin vs organizer vs customer
 - [ ] End-to-end happy path works without manual DB edits

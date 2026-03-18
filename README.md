@@ -43,6 +43,25 @@ Then start the full stack:
 docker compose up --build
 ```
 
+## Frozen Module List & Ownership
+
+| Module                                 | Owner Service                          | Supporting Services                                                  | Frontend Surfaces                                                                      |
+| -------------------------------------- | -------------------------------------- | -------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| Auth and User Management               | Spring Boot (`Backend/spring-backend`) | -                                                                    | `/login`, `/signup`, `/forgot-password`, `/reset-password`, `/profile`, `/admin/users` |
+| Event Management (CRUD + availability) | Spring Boot (`Backend/spring-backend`) | ASP.NET budget entries, Node notifications on downstream order flows | `/events`, `/events/:eventId`, `/create-event`, `/events/:eventId/edit`                |
+| Order and Ticketing                    | Spring Boot (`Backend/spring-backend`) | Node notifications                                                   | `/checkout/:eventId`, `/my-orders`                                                     |
+| Notifications and Logs                 | Node.js (`Backend/node-backend`)       | Triggered by Spring order flow                                       | `/notifications`                                                                       |
+| Reporting and Finance                  | ASP.NET (`Backend/dotnet-backend`)     | MySQL event/order/user data from Spring domain                       | `/admin/reports`, organizer budget sync from create-event                              |
+
+## Documentation Index
+
+- Event module details: `Docs/features-event-module.md`
+- Backend endpoint map: `Docs/backend-endpoint-map.md`
+- Frontend route to endpoint map: `Docs/page-route-endpoint-map.md`
+- Unified API envelope definition: `Docs/api-response-envelope.md`
+- Auth request/response samples: `Docs/auth-request-response-samples.md`
+- OpenAPI bundle: `Docs/openapi/`
+
 ## Comands
 
 ============================================================================

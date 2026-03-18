@@ -10,6 +10,18 @@ function resolveBaseUrl(envName, fallback) {
   return fallback;
 }
 
+function resolveOptionalEnvValue(envName) {
+  const value = import.meta.env[envName];
+
+  if (typeof value === "string" && value.trim()) {
+    return value.trim();
+  }
+
+  return "";
+}
+
+const reportsAdminKey = resolveOptionalEnvValue("VITE_REPORTS_ADMIN_KEY");
+
 export const springClient = axios.create({
   baseURL: resolveBaseUrl("VITE_SPRING_API_URL", "http://localhost:8080/api"),
   headers: {
@@ -23,6 +35,7 @@ export const reportsClient = axios.create({
   headers: {
     Accept: "application/json",
     "Content-Type": "application/json",
+    ...(reportsAdminKey ? { "X-Admin-Key": reportsAdminKey } : {}),
   },
 });
 

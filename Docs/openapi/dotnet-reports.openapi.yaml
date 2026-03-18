@@ -1,0 +1,87 @@
+openapi: 3.0.3
+info:
+  title: EventNest ASP.NET Reporting API
+  version: 1.0.0
+servers:
+  - url: http://localhost:5107/api
+paths:
+  /reports/health:
+    get:
+      summary: Reporting health
+      responses:
+        "200":
+          description: OK
+  /reports/health/live:
+    get:
+      summary: Liveness probe
+      responses:
+        "200":
+          description: OK
+  /reports/summary:
+    get:
+      summary: Reporting summary
+      security:
+        - adminKey: []
+      responses:
+        "200":
+          description: OK
+  /reports/budget-vs-actual:
+    get:
+      summary: Budget variance report
+      security:
+        - adminKey: []
+      responses:
+        "200":
+          description: OK
+  /reports/orders-by-category:
+    get:
+      summary: Orders by category
+      security:
+        - adminKey: []
+      responses:
+        "200":
+          description: OK
+  /reports/export:
+    get:
+      summary: Export summary as CSV
+      security:
+        - adminKey: []
+      parameters:
+        - in: query
+          name: format
+          schema:
+            type: string
+            default: csv
+      responses:
+        "200":
+          description: CSV content
+  /reports/budget:
+    post:
+      summary: Create budget entry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "201":
+          description: Created
+  /reports/expenses:
+    post:
+      summary: Create expense entry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "201":
+          description: Created
+components:
+  securitySchemes:
+    adminKey:
+      type: apiKey
+      in: header
+      name: X-Admin-Key

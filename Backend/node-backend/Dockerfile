@@ -11,7 +11,6 @@ COPY package.json package-lock.json ./
 RUN npm ci --omit=dev
 
 COPY src ./src
-COPY .env ./.env
 
 EXPOSE 4000
 
