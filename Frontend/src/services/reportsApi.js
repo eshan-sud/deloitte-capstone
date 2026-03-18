@@ -32,13 +32,31 @@ function normalizeBudgetRow(row = {}) {
 }
 
 export const reportsApi = {
-  async getAdminReports() {
+  async getAdminReports(filters = {}) {
     try {
+      const params = {};
+
+      if (filters.from) {
+        params.from = filters.from;
+      }
+
+      if (filters.to) {
+        params.to = filters.to;
+      }
+
+      if (filters.organizerId) {
+        params.organizerId = String(filters.organizerId).trim();
+      }
+
+      if (filters.status && filters.status !== "ALL") {
+        params.status = String(filters.status).trim().toUpperCase();
+      }
+
       const [summaryResponse, categoriesResponse, budgetResponse] =
         await Promise.all([
-          reportsClient.get("/reports/summary"),
-          reportsClient.get("/reports/orders-by-category"),
-          reportsClient.get("/reports/budget-vs-actual"),
+          reportsClient.get("/reports/summary", { params }),
+          reportsClient.get("/reports/orders-by-category", { params }),
+          reportsClient.get("/reports/budget-vs-actual", { params }),
         ]);
 
       const summary = normalizeSummary(extractEnvelope(summaryResponse));

@@ -14,9 +14,24 @@ public sealed class ReportsService(IConfiguration configuration, ILogger<Reports
 
     private readonly ILogger<ReportsService> _logger = logger;
 
-    public async Task<ReportSummaryDto> GetSummaryAsync(DateTimeOffset? from, DateTimeOffset? to, CancellationToken cancellationToken)
+    private sealed record ReportFilters(string? OrganizerId, string? Status)
+    {
+        public bool HasEventFilter => !string.IsNullOrWhiteSpace(OrganizerId) || !string.IsNullOrWhiteSpace(Status);
+    }
+
+    private sealed record EventMetadata(string Title, string Category);
+
+    private sealed record OrderSnapshot(string EventId, string Status, decimal Amount);
+
+    public async Task<ReportSummaryDto> GetSummaryAsync(
+        DateTimeOffset? from,
+        DateTimeOffset? to,
+        string? organizerId,
+        string? status,
+        CancellationToken cancellationToken)
     {
         ValidateDateRange(from, to);
+        var filters = NormalizeFilters(organizerId, status);
 
         MySqlConnection connection;
         try
@@ -32,14 +47,56 @@ public sealed class ReportsService(IConfiguration configuration, ILogger<Reports
         await using (connection)
         {
             var users = await CountAsync(connection, "users", from, to, cancellationToken);
-            var eventsCount = await CountAsync(connection, "events", from, to, cancellationToken);
-            var orders = await CountAsync(connection, "orders", from, to, cancellationToken);
-            var confirmedOrders = await CountByStatusAsync(connection, "orders", "CONFIRMED", from, to, cancellationToken);
-            var cancelledOrders = await CountByStatusAsync(connection, "orders", "CANCELLED", from, to, cancellationToken);
             var notificationsSent = await CountAsync(connection, "notifications", from, to, cancellationToken);
 
-            var grossRevenue = await SumAsync(connection, "orders", ["totalAmount", "total_amount", "amount"], "CONFIRMED", from, to, cancellationToken);
-            var totalExpenses = await SumAsync(connection, "expenses", ["amount", "actualAmount", "actual_amount"], null, from, to, cancellationToken);
+            var filteredEvents = await LoadFilteredEventsAsync(connection, filters, from, to, cancellationToken);
+            var eventsCount = filters.HasEventFilter
+                ? filteredEvents.Count
+                : await CountAsync(connection, "events", from, to, cancellationToken);
+
+            long orders;
+            long confirmedOrders;
+            long cancelledOrders;
+            decimal grossRevenue;
+
+            if (filters.HasEventFilter)
+            {
+                var filteredEventIds = new HashSet<string>(filteredEvents.Keys, StringComparer.OrdinalIgnoreCase);
+                var orderRows = await LoadOrderSnapshotsAsync(connection, from, to, cancellationToken);
+
+                var scopedOrders = orderRows
+                    .Where(row => !string.IsNullOrWhiteSpace(row.EventId) && filteredEventIds.Contains(row.EventId))
+                    .ToList();
+
+                orders = scopedOrders.Count;
+                confirmedOrders = scopedOrders.Count(row => string.Equals(row.Status, "CONFIRMED", StringComparison.OrdinalIgnoreCase));
+                cancelledOrders = scopedOrders.Count(row => string.Equals(row.Status, "CANCELLED", StringComparison.OrdinalIgnoreCase));
+                grossRevenue = scopedOrders
+                    .Where(row => string.Equals(row.Status, "CONFIRMED", StringComparison.OrdinalIgnoreCase))
+                    .Sum(row => row.Amount);
+            }
+            else
+            {
+                orders = await CountAsync(connection, "orders", from, to, cancellationToken);
+                confirmedOrders = await CountByStatusAsync(connection, "orders", "CONFIRMED", from, to, cancellationToken);
+                cancelledOrders = await CountByStatusAsync(connection, "orders", "CANCELLED", from, to, cancellationToken);
+                grossRevenue = await SumAsync(connection, "orders", ["totalAmount", "total_amount", "amount"], "CONFIRMED", from, to, cancellationToken);
+            }
+
+            decimal totalExpenses;
+            if (filters.HasEventFilter)
+            {
+                var filteredEventIds = new HashSet<string>(filteredEvents.Keys, StringComparer.OrdinalIgnoreCase);
+                var expenseTotalsByEvent = await LoadExpenseTotalsAsync(connection, from, to, cancellationToken);
+
+                totalExpenses = expenseTotalsByEvent
+                    .Where(entry => filteredEventIds.Contains(entry.Key))
+                    .Sum(entry => entry.Value);
+            }
+            else
+            {
+                totalExpenses = await SumAsync(connection, "expenses", ["amount", "actualAmount", "actual_amount"], null, from, to, cancellationToken);
+            }
 
             return new ReportSummaryDto
             {
@@ -59,9 +116,15 @@ public sealed class ReportsService(IConfiguration configuration, ILogger<Reports
         }
     }
 
-    public async Task<IReadOnlyList<BudgetVarianceRowDto>> GetBudgetVarianceAsync(DateTimeOffset? from, DateTimeOffset? to, CancellationToken cancellationToken)
+    public async Task<IReadOnlyList<BudgetVarianceRowDto>> GetBudgetVarianceAsync(
+        DateTimeOffset? from,
+        DateTimeOffset? to,
+        string? organizerId,
+        string? status,
+        CancellationToken cancellationToken)
     {
         ValidateDateRange(from, to);
+        var filters = NormalizeFilters(organizerId, status);
 
         MySqlConnection connection;
         try
@@ -76,6 +139,9 @@ public sealed class ReportsService(IConfiguration configuration, ILogger<Reports
 
         await using (connection)
         {
+            var filteredEvents = await LoadFilteredEventsAsync(connection, filters, null, null, cancellationToken);
+            var filteredEventIds = new HashSet<string>(filteredEvents.Keys, StringComparer.OrdinalIgnoreCase);
+
             if (!await TableExistsAsync(connection, "budgets", cancellationToken))
             {
                 return [];
@@ -118,6 +184,18 @@ public sealed class ReportsService(IConfiguration configuration, ILogger<Reports
                 return [];
             }
 
+            if (filters.HasEventFilter)
+            {
+                budgets = budgets
+                    .Where(budget => filteredEventIds.Contains(budget.EventId))
+                    .ToList();
+
+                if (budgets.Count == 0)
+                {
+                    return [];
+                }
+            }
+
             var eventTitles = await LoadEventTitlesAsync(connection, cancellationToken);
             var expenseTotals = await LoadExpenseTotalsAsync(connection, from, to, cancellationToken);
 
@@ -125,7 +203,16 @@ public sealed class ReportsService(IConfiguration configuration, ILogger<Reports
                 .Select(budget =>
                 {
                     expenseTotals.TryGetValue(budget.EventId, out var actualAmount);
-                    eventTitles.TryGetValue(budget.EventId, out var eventTitle);
+
+                    string eventTitle;
+                    if (filteredEvents.TryGetValue(budget.EventId, out var filteredEventTitle))
+                    {
+                        eventTitle = filteredEventTitle.Title;
+                    }
+                    else
+                    {
+                        eventTitles.TryGetValue(budget.EventId, out eventTitle);
+                    }
 
                     return new BudgetVarianceRowDto
                     {
@@ -142,9 +229,15 @@ public sealed class ReportsService(IConfiguration configuration, ILogger<Reports
         }
     }
 
-    public async Task<IReadOnlyList<OrderCategoryCountDto>> GetOrderCountsByCategoryAsync(DateTimeOffset? from, DateTimeOffset? to, CancellationToken cancellationToken)
+    public async Task<IReadOnlyList<OrderCategoryCountDto>> GetOrderCountsByCategoryAsync(
+        DateTimeOffset? from,
+        DateTimeOffset? to,
+        string? organizerId,
+        string? status,
+        CancellationToken cancellationToken)
     {
         ValidateDateRange(from, to);
+        var filters = NormalizeFilters(organizerId, status);
 
         MySqlConnection connection;
         try
@@ -159,8 +252,10 @@ public sealed class ReportsService(IConfiguration configuration, ILogger<Reports
 
         await using (connection)
         {
-            var eventCategories = await LoadEventCategoriesAsync(connection, cancellationToken);
-            if (eventCategories.Count == 0)
+            var filteredEvents = await LoadFilteredEventsAsync(connection, filters, null, null, cancellationToken);
+            var filteredEventIds = new HashSet<string>(filteredEvents.Keys, StringComparer.OrdinalIgnoreCase);
+
+            if (filters.HasEventFilter && filteredEvents.Count == 0)
             {
                 return [];
             }
@@ -171,10 +266,14 @@ public sealed class ReportsService(IConfiguration configuration, ILogger<Reports
                 return [];
             }
 
-            return countsByEventId
+            var scopedCounts = filters.HasEventFilter
+                ? countsByEventId.Where(entry => filteredEventIds.Contains(entry.Key))
+                : countsByEventId;
+
+            return scopedCounts
                 .GroupBy(
-                    entry => eventCategories.TryGetValue(entry.Key, out var category) && !string.IsNullOrWhiteSpace(category)
-                        ? category
+                    entry => filteredEvents.TryGetValue(entry.Key, out var eventInfo)
+                        ? eventInfo.Category
                         : "Uncategorized",
                     StringComparer.OrdinalIgnoreCase)
                 .Select(group => new OrderCategoryCountDto
@@ -186,25 +285,6 @@ public sealed class ReportsService(IConfiguration configuration, ILogger<Reports
                 .ThenBy(entry => entry.Category)
                 .ToList();
         }
-    }
-
-    private static ReportSummaryDto BuildEmptySummary(DateTimeOffset? from, DateTimeOffset? to)
-    {
-        return new ReportSummaryDto
-        {
-            Users = 0,
-            Events = 0,
-            Orders = 0,
-            ConfirmedOrders = 0,
-            CancelledOrders = 0,
-            NotificationsSent = 0,
-            GrossRevenue = 0m,
-            TotalExpenses = 0m,
-            NetRevenue = 0m,
-            FromDate = from,
-            ToDate = to,
-            GeneratedAt = DateTimeOffset.UtcNow
-        };
     }
 
     public async Task<long> CreateBudgetAsync(CreateBudgetRequest request, CancellationToken cancellationToken)
@@ -317,9 +397,14 @@ public sealed class ReportsService(IConfiguration configuration, ILogger<Reports
         }
     }
 
-    public async Task<string> ExportSummaryCsvAsync(DateTimeOffset? from, DateTimeOffset? to, CancellationToken cancellationToken)
+    public async Task<string> ExportSummaryCsvAsync(
+        DateTimeOffset? from,
+        DateTimeOffset? to,
+        string? organizerId,
+        string? status,
+        CancellationToken cancellationToken)
     {
-        var summary = await GetSummaryAsync(from, to, cancellationToken);
+        var summary = await GetSummaryAsync(from, to, organizerId, status, cancellationToken);
 
         var csvBuilder = new StringBuilder();
         csvBuilder.AppendLine("users,events,orders,confirmedOrders,cancelledOrders,notificationsSent,grossRevenue,totalExpenses,netRevenue,fromDate,toDate,generatedAt");
@@ -340,12 +425,49 @@ public sealed class ReportsService(IConfiguration configuration, ILogger<Reports
         return csvBuilder.ToString();
     }
 
+    private static ReportSummaryDto BuildEmptySummary(DateTimeOffset? from, DateTimeOffset? to)
+    {
+        return new ReportSummaryDto
+        {
+            Users = 0,
+            Events = 0,
+            Orders = 0,
+            ConfirmedOrders = 0,
+            CancelledOrders = 0,
+            NotificationsSent = 0,
+            GrossRevenue = 0m,
+            TotalExpenses = 0m,
+            NetRevenue = 0m,
+            FromDate = from,
+            ToDate = to,
+            GeneratedAt = DateTimeOffset.UtcNow
+        };
+    }
+
     private static void ValidateDateRange(DateTimeOffset? from, DateTimeOffset? to)
     {
         if (from.HasValue && to.HasValue && from.Value > to.Value)
         {
             throw new ReportDataException("Query parameter 'from' must be less than or equal to 'to'.", StatusCodes.Status400BadRequest);
         }
+    }
+
+    private static ReportFilters NormalizeFilters(string? organizerId, string? status)
+    {
+        var normalizedOrganizerId = string.IsNullOrWhiteSpace(organizerId)
+            ? null
+            : organizerId.Trim();
+
+        var normalizedStatus = string.IsNullOrWhiteSpace(status)
+            ? null
+            : status.Trim().ToUpperInvariant();
+
+        if (string.Equals(normalizedStatus, "ALL", StringComparison.OrdinalIgnoreCase))
+        {
+            normalizedStatus = null;
+        }
+
+        return new ReportFilters(normalizedOrganizerId, normalizedStatus);
     }
 
     private async Task<long> CountAsync(MySqlConnection connection, string tableName, DateTimeOffset? from, DateTimeOffset? to, CancellationToken cancellationToken)
@@ -470,40 +592,201 @@ public sealed class ReportsService(IConfiguration configuration, ILogger<Reports
         return map;
     }
 
-    private async Task<Dictionary<string, string>> LoadEventCategoriesAsync(MySqlConnection connection, CancellationToken cancellationToken)
+    private async Task<Dictionary<string, EventMetadata>> LoadFilteredEventsAsync(
+        MySqlConnection connection,
+        ReportFilters filters,
+        DateTimeOffset? from,
+        DateTimeOffset? to,
+        CancellationToken cancellationToken)
     {
         if (!await TableExistsAsync(connection, "events", cancellationToken))
         {
-            return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            return new Dictionary<string, EventMetadata>(StringComparer.OrdinalIgnoreCase);
         }
 
         var eventIdColumn = await ResolveColumnAsync(connection, "events", ["id", "eventId", "event_id"], cancellationToken);
-        var categoryColumn = await ResolveColumnAsync(connection, "events", ["category", "eventCategory", "event_category"], cancellationToken);
-
-        if (string.IsNullOrWhiteSpace(eventIdColumn) || string.IsNullOrWhiteSpace(categoryColumn))
+        if (string.IsNullOrWhiteSpace(eventIdColumn))
         {
-            return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            return new Dictionary<string, EventMetadata>(StringComparer.OrdinalIgnoreCase);
         }
 
-        var sql = $"SELECT `{eventIdColumn}`, `{categoryColumn}` FROM `events`";
-        await using var command = connection.CreateCommand();
-        command.CommandText = sql;
+        var titleColumn = await ResolveColumnAsync(connection, "events", ["title", "eventTitle", "name"], cancellationToken);
+        var categoryColumn = await ResolveColumnAsync(connection, "events", ["category", "eventCategory", "event_category"], cancellationToken);
+        var organizerColumn = await ResolveColumnAsync(connection, "events", ["organizerId", "organizer_id"], cancellationToken);
+        var statusColumn = await ResolveColumnAsync(connection, "events", ["status", "Status"], cancellationToken);
+        var dateColumn = await ResolveColumnAsync(connection, "events", DateColumnCandidates, cancellationToken);
 
-        var map = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        if (!string.IsNullOrWhiteSpace(filters.OrganizerId) && string.IsNullOrWhiteSpace(organizerColumn))
+        {
+            return new Dictionary<string, EventMetadata>(StringComparer.OrdinalIgnoreCase);
+        }
+
+        if (!string.IsNullOrWhiteSpace(filters.Status) && string.IsNullOrWhiteSpace(statusColumn))
+        {
+            return new Dictionary<string, EventMetadata>(StringComparer.OrdinalIgnoreCase);
+        }
+
+        var selectParts = new List<string> { $"`{eventIdColumn}`" };
+        if (!string.IsNullOrWhiteSpace(titleColumn))
+        {
+            selectParts.Add($"`{titleColumn}`");
+        }
+
+        if (!string.IsNullOrWhiteSpace(categoryColumn))
+        {
+            selectParts.Add($"`{categoryColumn}`");
+        }
+
+        if (!string.IsNullOrWhiteSpace(organizerColumn))
+        {
+            selectParts.Add($"`{organizerColumn}`");
+        }
+
+        if (!string.IsNullOrWhiteSpace(statusColumn))
+        {
+            selectParts.Add($"`{statusColumn}`");
+        }
+
+        if (!string.IsNullOrWhiteSpace(dateColumn))
+        {
+            selectParts.Add($"`{dateColumn}`");
+        }
+
+        var sql = new StringBuilder($"SELECT {string.Join(",", selectParts)} FROM `events`");
+        await using var command = connection.CreateCommand();
+        AppendDateClause(sql, command, dateColumn, from, to);
+        command.CommandText = sql.ToString();
+
+        var events = new Dictionary<string, EventMetadata>(StringComparer.OrdinalIgnoreCase);
+
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+        while (await reader.ReadAsync(cancellationToken))
+        {
+            var index = 0;
+
+            var eventId = reader.IsDBNull(index) ? string.Empty : reader.GetValue(index).ToString() ?? string.Empty;
+            index++;
+
+            if (string.IsNullOrWhiteSpace(eventId))
+            {
+                continue;
+            }
+
+            string title = "Unknown event";
+            if (!string.IsNullOrWhiteSpace(titleColumn))
+            {
+                title = reader.IsDBNull(index) ? "Unknown event" : reader.GetValue(index).ToString() ?? "Unknown event";
+                index++;
+            }
+
+            string category = "Uncategorized";
+            if (!string.IsNullOrWhiteSpace(categoryColumn))
+            {
+                category = reader.IsDBNull(index) ? "Uncategorized" : reader.GetValue(index).ToString() ?? "Uncategorized";
+                index++;
+            }
+
+            string organizer = string.Empty;
+            if (!string.IsNullOrWhiteSpace(organizerColumn))
+            {
+                organizer = reader.IsDBNull(index) ? string.Empty : reader.GetValue(index).ToString() ?? string.Empty;
+                index++;
+            }
+
+            string eventStatus = string.Empty;
+            if (!string.IsNullOrWhiteSpace(statusColumn))
+            {
+                eventStatus = reader.IsDBNull(index) ? string.Empty : reader.GetValue(index).ToString() ?? string.Empty;
+                index++;
+            }
+
+            if (!string.IsNullOrWhiteSpace(dateColumn))
+            {
+                // Date value has already been filtered in SQL when the column exists.
+                index++;
+            }
+
+            if (!string.IsNullOrWhiteSpace(filters.OrganizerId) && !string.Equals(organizer, filters.OrganizerId, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            if (!string.IsNullOrWhiteSpace(filters.Status) && !string.Equals(eventStatus, filters.Status, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            events[eventId] = new EventMetadata(
+                string.IsNullOrWhiteSpace(title) ? "Unknown event" : title,
+                string.IsNullOrWhiteSpace(category) ? "Uncategorized" : category);
+        }
+
+        return events;
+    }
+
+    private async Task<List<OrderSnapshot>> LoadOrderSnapshotsAsync(
+        MySqlConnection connection,
+        DateTimeOffset? from,
+        DateTimeOffset? to,
+        CancellationToken cancellationToken)
+    {
+        if (!await TableExistsAsync(connection, "orders", cancellationToken))
+        {
+            return [];
+        }
+
+        var eventIdColumn = await ResolveColumnAsync(connection, "orders", ["eventId", "event_id"], cancellationToken);
+        if (string.IsNullOrWhiteSpace(eventIdColumn))
+        {
+            return [];
+        }
+
+        var statusColumn = await ResolveColumnAsync(connection, "orders", ["status", "Status"], cancellationToken);
+        var amountColumn = await ResolveColumnAsync(connection, "orders", ["totalAmount", "total_amount", "amount"], cancellationToken);
+        var dateColumn = await ResolveColumnAsync(connection, "orders", DateColumnCandidates, cancellationToken);
+
+        var sql = new StringBuilder();
+        sql.Append($"SELECT `{eventIdColumn}`");
+
+        if (!string.IsNullOrWhiteSpace(statusColumn))
+        {
+            sql.Append($", `{statusColumn}`");
+        }
+        else
+        {
+            sql.Append(", ''");
+        }
+
+        if (!string.IsNullOrWhiteSpace(amountColumn))
+        {
+            sql.Append($", CAST(`{amountColumn}` AS DECIMAL(18,2))");
+        }
+        else
+        {
+            sql.Append(", 0");
+        }
+
+        sql.Append(" FROM `orders`");
+
+        await using var command = connection.CreateCommand();
+        AppendDateClause(sql, command, dateColumn, from, to);
+        command.CommandText = sql.ToString();
+
+        var rows = new List<OrderSnapshot>();
 
         await using var reader = await command.ExecuteReaderAsync(cancellationToken);
         while (await reader.ReadAsync(cancellationToken))
         {
             var eventId = reader.IsDBNull(0) ? string.Empty : reader.GetValue(0).ToString() ?? string.Empty;
-            var category = reader.IsDBNull(1) ? string.Empty : reader.GetValue(1).ToString() ?? string.Empty;
+            var orderStatus = reader.IsDBNull(1) ? string.Empty : reader.GetValue(1).ToString() ?? string.Empty;
+            var amount = reader.IsDBNull(2)
+                ? 0m
+                : Convert.ToDecimal(reader.GetValue(2), CultureInfo.InvariantCulture);
 
-            if (!string.IsNullOrWhiteSpace(eventId) && !map.ContainsKey(eventId))
-            {
-                map[eventId] = string.IsNullOrWhiteSpace(category) ? "Uncategorized" : category;
-            }
+            rows.Add(new OrderSnapshot(eventId, orderStatus, amount));
         }
 
-        return map;
+        return rows;
     }
 
     private async Task<Dictionary<string, long>> LoadConfirmedOrderCountsByEventIdAsync(
@@ -621,24 +904,19 @@ public sealed class ReportsService(IConfiguration configuration, ILogger<Reports
         }
 
         var separator = hasWhereClause ? " AND " : " WHERE ";
-        var appendedAnyClause = false;
 
         if (from.HasValue)
         {
             sql.Append(separator).Append($"`{dateColumn}` >= @fromDate");
             command.Parameters.AddWithValue("@fromDate", from.Value.UtcDateTime);
             separator = " AND ";
-            appendedAnyClause = true;
         }
 
         if (to.HasValue)
         {
             sql.Append(separator).Append($"`{dateColumn}` <= @toDate");
             command.Parameters.AddWithValue("@toDate", to.Value.UtcDateTime);
-            appendedAnyClause = true;
         }
-
-        _ = appendedAnyClause;
     }
 
     private static async Task<bool> TableExistsAsync(MySqlConnection connection, string tableName, CancellationToken cancellationToken)

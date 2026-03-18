@@ -347,6 +347,104 @@ app.post("/api/v1/notifications/event-order-created", async (req, res) => {
   }
 });
 
+// Event reminder trigger
+app.post("/api/v1/notifications/reminder", async (req, res) => {
+  const {
+    recipient,
+    recipientUserId,
+    channel = "email",
+    subject,
+    title,
+    message,
+    eventTitle,
+    eventDate,
+    daysLeft,
+  } = req.body || {};
+
+  if ((!recipient && !recipientUserId) || !eventTitle) {
+    return res.status(400).json({
+      success: false,
+      message: "recipient or recipientUserId, and eventTitle are required",
+    });
+  }
+
+  const notificationTitle = title || subject || `Reminder: ${eventTitle}`;
+  const notificationMessage =
+    message ||
+    (Number.isFinite(Number(daysLeft))
+      ? `Reminder: ${eventTitle} starts in ${Number(daysLeft)} day(s).`
+      : eventDate
+        ? `Reminder: ${eventTitle} is scheduled for ${eventDate}.`
+        : `Reminder: ${eventTitle} starts soon.`);
+
+  const resolvedChannel = recipient ? channel : "in-app";
+
+  try {
+    let emailResult = null;
+
+    if (resolvedChannel === "email" && recipient) {
+      emailResult = await sendEmail({
+        to: recipient,
+        subject: notificationTitle,
+        text: notificationMessage,
+        html: `<p>${notificationMessage}</p>`,
+      });
+    }
+
+    const notification = await createNotification({
+      type: "REMINDER",
+      recipient,
+      recipientUserId,
+      channel: resolvedChannel,
+      title: notificationTitle,
+      message: notificationMessage,
+      payload: {
+        eventTitle,
+        eventDate,
+        daysLeft,
+      },
+      status: "SENT",
+      sentAt: new Date(),
+    });
+
+    res.status(202).json({
+      success: true,
+      message: "Reminder sent",
+      data: {
+        notification: serializeNotification(notification),
+        emailResult,
+      },
+    });
+  } catch (err) {
+    try {
+      await createNotification({
+        type: "REMINDER",
+        recipient,
+        recipientUserId,
+        channel: resolvedChannel,
+        title: notificationTitle,
+        message: notificationMessage,
+        payload: {
+          eventTitle,
+          eventDate,
+          daysLeft,
+        },
+        status: "FAILED",
+        sentAt: null,
+        error: err.message,
+      });
+    } catch {
+      // Ignore secondary logging failure so the primary error still returns.
+    }
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to send reminder",
+      error: err.message,
+    });
+  }
+});
+
 app.get("/api/v1/notifications/my", async (req, res) => {
   const filter = buildIdentityFilter(req.query || {});
 

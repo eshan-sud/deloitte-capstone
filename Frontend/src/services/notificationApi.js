@@ -88,4 +88,17 @@ export const notificationApi = {
       throw new Error(getErrorMessage(error));
     }
   },
+
+  async sendReminder(payload) {
+    try {
+      const response = await notificationsClient.post(
+        "/v1/notifications/reminder",
+        payload,
+      );
+
+      return extractEnvelope(response);
+    } catch (error) {
+      throw new Error(getErrorMessage(error));
+    }
+  },
 };

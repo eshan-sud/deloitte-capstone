@@ -4,10 +4,19 @@ import { reportsApi } from "../services/reportsApi";
 import "./Portal.css";
 import "./AdminReports.css";
 
+const INITIAL_FILTERS = {
+  from: "",
+  to: "",
+  organizerId: "",
+  status: "ALL",
+};
+
 function AdminReports() {
   const [report, setReport] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+  const [filters, setFilters] = useState(INITIAL_FILTERS);
+  const [appliedFilters, setAppliedFilters] = useState(INITIAL_FILTERS);
 
   useEffect(() => {
     let ignore = false;
@@ -17,7 +26,7 @@ function AdminReports() {
       setError("");
 
       try {
-        const response = await reportsApi.getAdminReports();
+        const response = await reportsApi.getAdminReports(appliedFilters);
         if (!ignore) {
           setReport(response);
         }
@@ -37,7 +46,34 @@ function AdminReports() {
     return () => {
       ignore = true;
     };
-  }, []);
+  }, [
+    appliedFilters.from,
+    appliedFilters.to,
+    appliedFilters.organizerId,
+    appliedFilters.status,
+  ]);
+
+  const handleFilterChange = (event) => {
+    const { name, value } = event.target;
+    setFilters((previous) => ({
+      ...previous,
+      [name]: value,
+    }));
+  };
+
+  const handleApplyFilters = () => {
+    setAppliedFilters({
+      from: filters.from,
+      to: filters.to,
+      organizerId: filters.organizerId.trim(),
+      status: filters.status,
+    });
+  };
+
+  const handleResetFilters = () => {
+    setFilters(INITIAL_FILTERS);
+    setAppliedFilters(INITIAL_FILTERS);
+  };
 
   const maxCategoryValue = useMemo(() => {
     if (!report || typeof report.ordersByCategory !== "object") {
@@ -72,6 +108,66 @@ function AdminReports() {
             </Link>
           </div>
         </div>
+
+        <section className="card" style={{ marginBottom: "1rem" }}>
+          <h2 className="panel-title">Report Filters</h2>
+          <div className="form-grid" style={{ marginTop: "0.5rem" }}>
+            <label>
+              From Date
+              <input
+                type="date"
+                name="from"
+                value={filters.from}
+                onChange={handleFilterChange}
+              />
+            </label>
+
+            <label>
+              To Date
+              <input
+                type="date"
+                name="to"
+                value={filters.to}
+                onChange={handleFilterChange}
+              />
+            </label>
+
+            <label>
+              Organizer ID
+              <input
+                type="text"
+                name="organizerId"
+                value={filters.organizerId}
+                onChange={handleFilterChange}
+                placeholder="Example: 2"
+              />
+            </label>
+
+            <label>
+              Event Status
+              <select
+                name="status"
+                value={filters.status}
+                onChange={handleFilterChange}
+              >
+                <option value="ALL">ALL</option>
+                <option value="DRAFT">DRAFT</option>
+                <option value="PUBLISHED">PUBLISHED</option>
+                <option value="CLOSED">CLOSED</option>
+                <option value="CANCELLED">CANCELLED</option>
+              </select>
+            </label>
+          </div>
+
+          <div className="portal-actions" style={{ marginTop: "1rem" }}>
+            <button className="btn btn-primary" onClick={handleApplyFilters}>
+              Apply Filters
+            </button>
+            <button className="btn btn-outline" onClick={handleResetFilters}>
+              Reset
+            </button>
+          </div>
+        </section>
 
         {error ? <div className="alert error">{error}</div> : null}
 

@@ -1,9 +1,13 @@
+# Copy this file to appsettings.json
+# Place your default database connection string in the placeholder
+# Remove these comments during production
+
 {
   "Cors": {
     "AllowedOrigins": ["http://localhost:3000", "http://localhost:5173"]
   },
   "ConnectionStrings": {
-    "DefaultConnection": "Server=localhost;Port=3306;Database=event_management;Uid=root;Pwd=root;"
+    "DefaultConnection": "<INSERT_YOUR_CONNECTION_STRING>"
   },
   "Logging": {
     "LogLevel": {
