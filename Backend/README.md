@@ -1,20 +1,64 @@
-# Backend
+# Backend Services
 
-This backend has been reset for the event-management pivot.
+This directory contains the three backend services used by the EventNest capstone.
 
-## Active Backends
+## Services
 
-- spring-backend: Existing Spring Boot auth module
-- node-backend: New Express middleware-ready service scaffold
-- dotnet-backend: ASP.NET Core reporting/admin starter service
-- Backend-new (sibling directory at project root): Migrated Spring auth module for latest Java runtime
+- `spring-backend` (Java / Spring Boot)
+	- Auth and user management
+	- Events and venues
+	- Orders and ticketing
 
-## Removed
+- `node-backend` (Node.js / Express)
+	- Notification service
+	- Event order notifications
+	- Reminder notifications
+	- Notification logs and read tracking
 
-- banking account/transaction modules (deleted)
+- `dotnet-backend` (ASP.NET Core)
+	- Reporting summary and KPIs
+	- Budget and expense APIs
+	- Budget-vs-actual and order category reports
+	- CSV export
 
-## Next Extension Points
+## Run Locally
 
-- Event CRUD module
-- Attendee registration module
-- Organizer dashboard module
+From repository root:
+
+```bash
+npm run start:spring
+npm run start:node
+npm run start:dotnet
+```
+
+Or run all services (including frontend):
+
+```bash
+npm run start-project
+```
+
+## Health Endpoints
+
+- Spring: `http://localhost:8080/api/auth/health`
+- Node: `http://localhost:4000/api/health`
+- ASP.NET: `http://localhost:5107/api/reports/health`
+
+## Docker
+
+Each service has its own Dockerfile:
+
+- `Backend/spring-backend/Dockerfile`
+- `Backend/node-backend/Dockerfile`
+- `Backend/dotnet-backend/Dockerfile`
+
+To run the complete stack:
+
+```bash
+docker compose up --build
+```
+
+## Environment Notes
+
+- Node uses `Backend/node-backend/.env`.
+- Spring and ASP.NET connection values are set in `docker-compose.yml` for compose runs.
+- Database setup scripts are in `Database/queries.sql`.

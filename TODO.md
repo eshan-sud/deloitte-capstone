@@ -27,15 +27,15 @@ Status legend:
 - [x] Admin reporting page (UI, mock)
 - [x] `/admin/reports` Admin reporting page (UI, mock)
 - [x] Route protection for authenticated pages (role-based)
-- [ ] Connect frontend Login & Signup to Spring auth APIs
-- [ ] Connect frontend Events page to live API
-- [ ] Connect frontend Create Event form to live API
-- [ ] Add error banners/loading states for event pages
-- [ ] Build frontend Admin Reports page (`/admin/reports`)
+- [x] Connect frontend Login & Signup to Spring auth APIs
+- [x] Connect frontend Events page to live API
+- [x] Connect frontend Create Event form to live API
+- [x] Add error banners/loading states for event pages
+- [x] Build frontend Admin Reports page (`/admin/reports`)
 - [ ] Frontend URLs/pages document (final)
 - [ ] UI screenshots pack (final)
 - [ ] Screenshots of application UI
-- [ ] Responsive UI for desktop & mobile
+- [x] Responsive UI for desktop & mobile
 
 ## Backend (Spring)
 
@@ -48,18 +48,18 @@ Status legend:
 - [x] `GET /api/auth/health` exists
 - [x] `PUT /api/users/me` exists
 - [x] `GET /api/auth/users` exists
-- [ ] `GET /api/users/{id}` exists
+- [x] `GET /api/users/{id}` exists
 - [x] `PATCH /api/auth/users/{id}/status` exists
 - [x] Event module (entities + CRUD + search) exists
 - [x] Attendee/registration module exists
 - [x] Order/ticketing module exists
-- [ ] Integration tests exist
+- [x] Integration tests exist
 - [x] Register user (`POST /api/auth/register`)
 - [x] Login user with JWT (`POST /api/auth/login`)
 - [x] Current user (`GET /api/auth/me`)
 - [x] Update profile (`PUT /api/users/me`)
 - [x] List users for admin (`GET /api/auth/users`)
-- [ ] User detail (`GET /api/users/{id}`)
+- [x] User detail (`GET /api/users/{id}`)
 - [x] User activation/deactivation (`PATCH /api/auth/users/{id}/status`)
 - [x] Role-based authorization (ADMIN/ORGANIZER/CUSTOMER)
 - [x] User role update (`PATCH /api/auth/users/{id}/role`)
@@ -68,7 +68,7 @@ Status legend:
 - [x] Get event details (`GET /api/events/{id}`)
 - [x] Update event (`PUT /api/events/{id}`)
 - [x] Delete event (`DELETE /api/events/{id}`)
-- [ ] Venue availability check (`GET /api/venues/availability`)
+- [x] Venue availability check (`GET /api/venues/availability`)
 - [x] Organizer ownership check for update/delete
 - [x] Event status workflow (DRAFT, PUBLISHED, CLOSED, CANCELLED)
 - [x] Register attendee / place order (`POST /api/orders`)
@@ -81,36 +81,36 @@ Status legend:
 - [x] Add user management endpoints in Spring Boot (`/api/users/me`, `/api/auth/users/...`)
 - [x] Add role fields & role checks (ADMIN/ORGANIZER/CUSTOMER)
 - [x] Add profile update flow
-- [ ] Store JWT & user data in auth context/local storage
-- [ ] Register -> Login -> Dashboard works using real backend JWT
+- [x] Store JWT & user data in auth context/local storage
+- [x] Register -> Login -> Dashboard works using real backend JWT
 - [x] Create Event & Venue entities, repositories, services, controllers
 - [x] Implement event CRUD endpoints
 - [x] Add ownership & authorization checks for event modifications
 - [ ] Update features document for Event module
-- [ ] Organizer can create/update/delete events & public users can view them
+- [x] Organizer can create/update/delete events & public users can view them
 - [x] Create order/ticket entities & business rules
 - [x] Implement order endpoints (`create`, `my`, `by-id`, `cancel`)
 - [x] Add oversell protection (capacity check + transaction safety)
-- [ ] Add Dockerfile for spring-backend
+- [x] Add Dockerfile for spring-backend
 
 ## Backend (Node)
 
 - [x] Express service scaffold exists
 - [x] `GET /api/health` exists
 - [x] `POST /api/v1/notifications/test` exists
-- [ ] `POST /api/v1/notifications/send` exists
-- [ ] `POST /api/v1/notifications/event-order-created` exists
-- [ ] Notification persistence (DB) exists
-- [ ] Retry/failure handling strategy exists
+- [x] `POST /api/v1/notifications/send` exists
+- [x] `POST /api/v1/notifications/event-order-created` exists
+- [x] Notification persistence (DB) exists
+- [x] Retry/failure handling strategy exists
 - [x] Service health endpoint (`GET /api/health`)
 - [x] Test notification endpoint (`POST /api/v1/notifications/test`)
-- [ ] Send notification endpoint (`POST /api/v1/notifications/send`)
-- [ ] Order-created trigger endpoint (`POST /api/v1/notifications/event-order-created`)
-- [ ] Reminder endpoint (`POST /api/v1/notifications/reminder`)
-- [ ] Upgrade Node notification service with:
-- [ ] Trigger Node notifications after successful order creation
-- [ ] Log notification requests & delivery status
-- [ ] Add Dockerfile for node-backend
+- [x] Send notification endpoint (`POST /api/v1/notifications/send`)
+- [x] Order-created trigger endpoint (`POST /api/v1/notifications/event-order-created`)
+- [x] Reminder endpoint (`POST /api/v1/notifications/reminder`)
+- [x] Upgrade Node notification service with:
+- [x] Trigger Node notifications after successful order creation
+- [x] Log notification requests & delivery status
+- [x] Add Dockerfile for node-backend
 
 ## Backend (ASP.NET)
 
@@ -120,7 +120,7 @@ Status legend:
 - [x] `GET /api/reports/summary` exists (database-backed)
 - [x] Reporting endpoints are connected to real database queries
 - [x] Budget & expense reporting endpoints exist
-- [ ] Admin report filters (date range, organizer, status) exist
+- [x] Admin report filters (date range, organizer, status) exist
 - [x] Reporting health endpoint (`GET /api/reports/health`)
 - [x] Summary endpoint skeleton (`GET /api/reports/summary`)
 - [x] Real summary query from MySQL (users/events/orders/revenue)
@@ -128,25 +128,25 @@ Status legend:
 - [x] Budget vs actual endpoint (`GET /api/reports/budget-vs-actual`)
 - [x] Expense entry endpoint (`POST /api/reports/expenses`)
 - [x] Financial export endpoint (`GET /api/reports/export?format=csv`)
-- [ ] Connect ASP.NET reporting service to MySQL
-- [ ] Replace mock summary with real aggregate queries
-- [ ] Implement budget & expense APIs
-- [ ] Add date-range filter support for reports
-- [ ] Show key KPIs: total events, attendees, orders, revenue, expense, net
-- [ ] Add input validation for budget/expense entries
+- [x] Connect ASP.NET reporting service to MySQL
+- [x] Replace mock summary with real aggregate queries
+- [x] Implement budget & expense APIs
+- [x] Add date-range filter support for reports
+- [x] Show key KPIs: total events, attendees, orders, revenue, expense, net
+- [x] Add input validation for budget/expense entries
 - [ ] Add basic auth guard for admin reporting routes
 - [ ] Capture reporting screenshots
-- [ ] Admin can view real report metrics & budget summary
+- [x] Admin can view real report metrics & budget summary
 
 ## Project-wide / Docs / DevOps
 
 - [x] User module is fully complete with user management endpoints
-- [ ] At least 2-3 non-user modules are fully implemented end-to-end
+- [x] At least 2-3 non-user modules are fully implemented end-to-end
 - [ ] Full documentation pack is complete for submission
-- [ ] Application is dockerized & runnable with one command
-- [ ] Login is connected to live backend API
-- [ ] Signup is connected to live backend API
-- [ ] Event CRUD pages are connected to backend APIs
+- [x] Application is dockerized & runnable with one command
+- [x] Login is connected to live backend API
+- [x] Signup is connected to live backend API
+- [x] Event CRUD pages are connected to backend APIs
 - [x] User entity & repository exist
 - [x] Validation annotations exist on auth DTOs
 - [x] Global exception handling exists
@@ -154,14 +154,14 @@ Status legend:
 - [x] Middleware hardening exists (`cors`, `helmet`, `compression`, `morgan`, rate limiter)
 - [x] OpenAPI is enabled in development
 - [x] CORS policy for frontend origins exists
-- [ ] Database SQL is aligned to event management domain (current script still banking-focused)
-- [ ] Dockerfiles for services exist
-- [ ] `docker-compose.yml` exists
+- [x] Database SQL is aligned to event management domain (current script still banking-focused)
+- [x] Dockerfiles for services exist
+- [x] `docker-compose.yml` exists
 - [ ] Postman collection exists
 - [ ] OpenAPI export/package for all services exists
 - [ ] ER diagram, wireframes, & user-flow docs are finalized in submission format
 - [x] Frontend checkout page & order history page
-- [ ] Notification logs table & persistence
+- [x] Notification logs table & persistence
 - [x] `/` Home
 - [x] `/events` Events list (mock data, filterable)
 - [x] `/dashboard` Dashboard (mock data, role-aware)
@@ -172,9 +172,9 @@ Status legend:
 - [x] `/my-orders` User order history (UI, mock)
 - [x] `/notifications` Notification center (UI, mock)
 - [ ] Freeze final module list & service ownership in README
-- [ ] Replace `Database/queries.sql` with event-management schema:
-- [ ] Add indexes & foreign keys
-- [ ] Add seed data script for demo
+- [x] Replace `Database/queries.sql` with event-management schema:
+- [x] Add indexes & foreign keys
+- [x] Add seed data script for demo
 - [ ] Define unified API response envelope (`success`, `message`, `data`, `errors`, `timestamp`)
 - [ ] Finalize endpoint map for all three backend services
 - [ ] Create ER diagram (v1)
@@ -182,29 +182,29 @@ Status legend:
 - [ ] Create page-route-to-endpoint mapping sheet (v1)
 - [ ] DB schema approved & runnable
 - [ ] Every page is mapped to an endpoint/service
-- [ ] Add protected route wrapper & logout flow
-- [ ] Add backend validation coverage for auth & profile update
+- [x] Add protected route wrapper & logout flow
+- [x] Add backend validation coverage for auth & profile update
 - [ ] Add Postman folder for auth & user management
 - [ ] Update endpoint documentation with auth request/response samples
 - [ ] Capture auth screenshots (login, signup, profile)
 - [ ] Add search, filtering, & pagination
 - [x] Add new Event Details page (`/events/:id`)
-- [ ] Add field validation (date/time/capacity/title uniqueness per organizer)
+- [x] Add field validation (date/time/capacity/title uniqueness per organizer)
 - [ ] Capture event list/create/edit/detail screenshots
 - [x] Create checkout page (`/checkout/:eventId`)
 - [x] Create my orders page (`/my-orders`)
-- [ ] Add order validation & cancellation edge case handling
+- [x] Add order validation & cancellation edge case handling
 - [ ] Update attendee/ticketing flow documentation
 - [ ] Capture checkout & order history screenshots
 - [ ] Create user flow diagram: Browse Event -> Checkout -> Confirmation -> Notification
-- [ ] User can register/book event & receive notification record
+- [x] User can register/book event & receive notification record
 - [ ] Update module details doc with reporting formulas & assumptions
-- [ ] Add Dockerfile for frontend
-- [ ] Add Dockerfile for dotnet-backend
-- [ ] Create `docker-compose.yml` with MySQL + all services
-- [ ] Add health checks & startup dependencies
+- [x] Add Dockerfile for frontend
+- [x] Add Dockerfile for dotnet-backend
+- [x] Create `docker-compose.yml` with MySQL + all services
+- [x] Add health checks & startup dependencies
 - [ ] Run smoke tests for all key user journeys
-- [ ] Run endpoint sanity tests across all services
+- [x] Run endpoint sanity tests across all services
 - [ ] Fix blocker & major severity bugs only
 - [ ] Features & module details document (final)
 - [ ] Backend endpoints document (final)
@@ -228,9 +228,9 @@ Status legend:
 - [ ] Dockerization proof (compose file + run output screenshots)
 - [ ] Any additional supporting notes (assumptions, known limitations)
 - [ ] Clean, consistent API responses across all services
-- [ ] Role-based access control for admin vs organizer vs customer
+- [x] Role-based access control for admin vs organizer vs customer
 - [ ] End-to-end happy path works without manual DB edits
-- [ ] Input validation & clear error messages on frontend/backend
+- [x] Input validation & clear error messages on frontend/backend
 - [ ] No critical security anti-patterns (plain passwords, open admin routes)
-- [ ] Basic logging in all services for debugging demo issues
+- [x] Basic logging in all services for debugging demo issues
 - [ ] No placeholder banking-domain artifacts in final UI/API/docs

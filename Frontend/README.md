@@ -1,17 +1,33 @@
-# Event Management Frontend
+# Frontend (React + Vite)
 
-Basic React + Vite UI scaffold for an Event Management System.
+This is the EventNest client application.
 
-## Current Pages
+## Main Routes
 
-- Home
-- Events
-- Create Event
-- Dashboard
-- Login
-- Sign Up
+- `/` Home
+- `/events` Event listing
+- `/events/:eventId` Event details
+- `/create-event` Create/Edit event (organizer/admin)
+- `/dashboard` Role-aware dashboard
+- `/notifications` Notification center
+- `/my-orders` Customer order history
+- `/profile` Profile management
+- `/admin/reports` Reporting dashboard
+- `/admin/users` User management
+- `/login` Sign in
+- `/signup` Registration
+- `/forgot-password` Forgot password
+- `/reset-password` Reset password
 
-## Run Locally
+## API Configuration
+
+The frontend reads these environment variables:
+
+- `VITE_SPRING_API_URL` (default: `http://localhost:8080/api`)
+- `VITE_ASPNET_API_URL` (default: `http://localhost:5107/api`)
+- `VITE_NODE_API_URL` (default: `http://localhost:4000/api`)
+
+## Development
 
 ```bash
 cd Frontend
@@ -19,9 +35,22 @@ npm install
 npm run dev
 ```
 
-Default URL: http://localhost:5173
+App URL: `http://localhost:5173`
 
-## Notes
+## Production Build
 
-- UI is intentionally basic & ready for requirement-driven expansion.
-- Auth screens are prepared to connect to Spring Boot auth endpoints.
+```bash
+cd Frontend
+npm run build
+npm run preview
+```
+
+## Docker
+
+`Frontend/Dockerfile` builds the Vite app and serves it through Nginx.
+
+Use root compose for full stack run:
+
+```bash
+docker compose up --build
+```

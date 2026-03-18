@@ -43,6 +43,21 @@
   margin-top: 1rem;
 }
 
+.availability-note {
+  margin-top: 0.35rem;
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.availability-note-success {
+  color: #15803d;
+}
+
+.availability-note-warning {
+  color: #b45309;
+}
+
 .submit-row {
   margin-top: 1rem;
   display: flex;

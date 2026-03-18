@@ -3,7 +3,6 @@ package com.banking.app.dto;
 import com.banking.app.entity.Event;
 import com.banking.app.entity.EventStatus;
 import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

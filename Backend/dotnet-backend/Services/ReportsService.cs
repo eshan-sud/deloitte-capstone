@@ -204,14 +204,18 @@ public sealed class ReportsService(IConfiguration configuration, ILogger<Reports
                 {
                     expenseTotals.TryGetValue(budget.EventId, out var actualAmount);
 
-                    string eventTitle;
+                    string eventTitle = "Unknown event";
                     if (filteredEvents.TryGetValue(budget.EventId, out var filteredEventTitle))
                     {
                         eventTitle = filteredEventTitle.Title;
                     }
                     else
                     {
-                        eventTitles.TryGetValue(budget.EventId, out eventTitle);
+                        eventTitles.TryGetValue(budget.EventId, out var mappedTitle);
+                        if (!string.IsNullOrWhiteSpace(mappedTitle))
+                        {
+                            eventTitle = mappedTitle;
+                        }
                     }
 
                     return new BudgetVarianceRowDto

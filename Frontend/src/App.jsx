@@ -11,6 +11,8 @@ import Events from "./pages/Events";
 import CreateEvent from "./pages/CreateEvent";
 import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import Dashboard from "./pages/Dashboard";
 import EventDetails from "./pages/EventDetails";
 import Checkout from "./pages/Checkout";
@@ -34,6 +36,8 @@ function App() {
             <Route path="/events/:eventId" element={<EventDetails />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<SignUp />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
 
             <Route
               path="/dashboard"

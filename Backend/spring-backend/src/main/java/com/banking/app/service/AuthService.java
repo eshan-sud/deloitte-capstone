@@ -1,8 +1,11 @@
 package com.banking.app.service;
 
 import com.banking.app.dto.AuthResponse;
+import com.banking.app.dto.ForgotPasswordRequest;
+import com.banking.app.dto.ForgotPasswordResponse;
 import com.banking.app.dto.LoginRequest;
 import com.banking.app.dto.RegisterRequest;
+import com.banking.app.dto.ResetPasswordRequest;
 import com.banking.app.dto.UserResponse;
 import com.banking.app.entity.Role;
 import com.banking.app.entity.User;
@@ -32,6 +35,9 @@ public class AuthService {
 
     @Autowired
     private JwtTokenProvider tokenProvider;
+
+    @Autowired
+    private PasswordResetService passwordResetService;
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
@@ -90,5 +96,28 @@ public class AuthService {
         User user = userRepository.findByEmailIgnoreCase(email)
                 .orElseThrow(() -> new BadRequestException("User not found"));
         return new UserResponse(user);
+    }
+
+    @Transactional(readOnly = true)
+    public ForgotPasswordResponse forgotPassword(ForgotPasswordRequest request) {
+        String normalizedEmail = request.getEmail().trim().toLowerCase();
+
+        return userRepository.findByEmailIgnoreCase(normalizedEmail)
+                .map((user) -> passwordResetService.issueDemoToken(user.getEmail()))
+                .orElseGet(ForgotPasswordResponse::generic);
+    }
+
+    @Transactional
+    public void resetPassword(ResetPasswordRequest request) {
+        if (!request.getPassword().equals(request.getConfirmPassword())) {
+            throw new BadRequestException("Passwords do not match");
+        }
+
+        String email = passwordResetService.consumeToken(request.getToken().trim());
+        User user = userRepository.findByEmailIgnoreCase(email)
+                .orElseThrow(() -> new BadRequestException("User not found"));
+
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        userRepository.save(user);
     }
 }

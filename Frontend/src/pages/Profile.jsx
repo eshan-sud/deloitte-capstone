@@ -49,7 +49,6 @@ function Profile() {
     setError("");
 
     try {
-      // TEMPORARY MOCK API CALL: replace with GET /api/auth/me later.
       const nextUser = await refreshUser();
 
       if (nextUser) {
@@ -84,7 +83,6 @@ function Profile() {
     setIsSaving(true);
 
     try {
-      // TEMPORARY MOCK API CALL: replace with PUT /api/users/me later.
       await updateProfile(formData);
       setSuccess("Profile updated successfully.");
     } catch (saveError) {

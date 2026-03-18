@@ -2,6 +2,7 @@ package com.banking.app.controller;
 
 import com.banking.app.dto.ApiResponse;
 import com.banking.app.dto.EventDtos;
+import com.banking.app.dto.VenueAvailabilityResponse;
 import com.banking.app.dto.VenueResponse;
 import com.banking.app.entity.Role;
 import com.banking.app.entity.User;
@@ -22,7 +23,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.format.annotation.DateTimeFormat;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 
 @RestController
@@ -41,6 +46,24 @@ public class EventController {
     public ResponseEntity<ApiResponse<List<VenueResponse>>> listVenues() {
         List<VenueResponse> venues = eventService.listVenues();
         return ResponseEntity.ok(ApiResponse.success("Venues fetched", venues));
+    }
+
+    @GetMapping("/venues/availability")
+    public ResponseEntity<ApiResponse<VenueAvailabilityResponse>> checkVenueAvailability(
+            @RequestParam Long venueId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant startAt,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant endAt,
+            @RequestParam(required = false) Long excludeEventId) {
+        LocalDateTime requestedStartAt = LocalDateTime.ofInstant(startAt, ZoneOffset.UTC);
+        LocalDateTime requestedEndAt = LocalDateTime.ofInstant(endAt, ZoneOffset.UTC);
+
+        VenueAvailabilityResponse availability = eventService.checkVenueAvailability(
+                venueId,
+                requestedStartAt,
+                requestedEndAt,
+                excludeEventId);
+
+        return ResponseEntity.ok(ApiResponse.success("Venue availability checked", availability));
     }
 
     @GetMapping("/events")

@@ -1,6 +1,7 @@
 package com.banking.app.service;
 
 import com.banking.app.dto.EventDtos;
+import com.banking.app.dto.VenueAvailabilityResponse;
 import com.banking.app.dto.VenueResponse;
 import com.banking.app.entity.Event;
 import com.banking.app.entity.EventStatus;
@@ -14,6 +15,7 @@ import com.banking.app.repository.VenueRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -74,9 +76,12 @@ public class EventService {
         requireManagerRole(requester);
 
         validateEventSchedule(request.getStartAt(), request.getEndAt());
+        validateOrganizerTitle(requester.getId(), request.getTitle(), null);
 
         Venue venue = venueRepository.findById(request.getVenueId())
                 .orElseThrow(() -> new ResourceNotFoundException("Venue not found"));
+        requireActiveVenue(venue);
+        requireVenueAvailability(venue.getId(), request.getStartAt(), request.getEndAt(), null);
 
         Event event = new Event();
         applyEventRequest(event, request, venue);
@@ -95,6 +100,7 @@ public class EventService {
 
         requireEventAccess(requester, event);
         validateEventSchedule(request.getStartAt(), request.getEndAt());
+        validateOrganizerTitle(event.getOrganizer().getId(), request.getTitle(), event.getId());
 
         if (request.getCapacity() < event.getSeatsBooked()) {
             throw new BadRequestException("Capacity cannot be lower than booked seats");
@@ -102,6 +108,8 @@ public class EventService {
 
         Venue venue = venueRepository.findById(request.getVenueId())
                 .orElseThrow(() -> new ResourceNotFoundException("Venue not found"));
+    requireActiveVenue(venue);
+    requireVenueAvailability(venue.getId(), request.getStartAt(), request.getEndAt(), event.getId());
 
         applyEventRequest(event, request, venue);
 
@@ -119,6 +127,21 @@ public class EventService {
         eventRepository.delete(event);
     }
 
+    @Transactional(readOnly = true)
+    public VenueAvailabilityResponse checkVenueAvailability(
+            Long venueId,
+            LocalDateTime startAt,
+            LocalDateTime endAt,
+            Long excludeEventId) {
+        validateEventSchedule(startAt, endAt);
+
+        Venue venue = venueRepository.findById(venueId)
+                .orElseThrow(() -> new ResourceNotFoundException("Venue not found"));
+
+        List<Event> conflicts = eventRepository.findVenueConflicts(venueId, startAt, endAt, excludeEventId);
+        return VenueAvailabilityResponse.of(venue.getId(), venue.getName(), startAt, endAt, conflicts);
+    }
+
     private static void applyEventRequest(Event event, EventDtos.EventRequest request, Venue venue) {
         event.setTitle(request.getTitle().trim());
         event.setCategory(request.getCategory().trim());
@@ -134,6 +157,35 @@ public class EventService {
     private static void validateEventSchedule(java.time.LocalDateTime startAt, java.time.LocalDateTime endAt) {
         if (endAt.isBefore(startAt) || endAt.isEqual(startAt)) {
             throw new BadRequestException("End time must be after start time");
+        }
+    }
+
+    private void validateOrganizerTitle(Long organizerId, String title, Long eventId) {
+        String normalizedTitle = title.trim();
+
+        boolean exists = eventId == null
+                ? eventRepository.existsByOrganizerIdAndTitleIgnoreCase(organizerId, normalizedTitle)
+                : eventRepository.existsByOrganizerIdAndTitleIgnoreCaseAndIdNot(organizerId, normalizedTitle, eventId);
+
+        if (exists) {
+            throw new BadRequestException("You already have an event with this title");
+        }
+    }
+
+    private void requireVenueAvailability(
+            Long venueId,
+            LocalDateTime startAt,
+            LocalDateTime endAt,
+            Long excludeEventId) {
+        List<Event> conflicts = eventRepository.findVenueConflicts(venueId, startAt, endAt, excludeEventId);
+        if (!conflicts.isEmpty()) {
+            throw new BadRequestException("Selected venue is not available for the requested time slot");
+        }
+    }
+
+    private static void requireActiveVenue(Venue venue) {
+        if (!Boolean.TRUE.equals(venue.getActive())) {
+            throw new BadRequestException("Selected venue is not active");
         }
     }
 

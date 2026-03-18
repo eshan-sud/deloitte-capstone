@@ -56,7 +56,13 @@ public class SecurityConfig {
             .cors(Customizer.withDefaults())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                    .requestMatchers("/auth/register", "/auth/login", "/auth/health").permitAll()
+                    .requestMatchers(
+                            "/auth/register",
+                            "/auth/login",
+                            "/auth/forgot-password",
+                            "/auth/reset-password",
+                            "/auth/health")
+                    .permitAll()
                     .requestMatchers(HttpMethod.GET, "/events", "/events/**", "/venues", "/venues/**").permitAll()
                     .requestMatchers("/health").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()

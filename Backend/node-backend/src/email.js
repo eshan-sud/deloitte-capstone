@@ -14,7 +14,7 @@ const transporter = nodemailer.createTransport({
 
 async function sendEmail({ to, subject, text, html }) {
   const info = await transporter.sendMail({
-    from: process.env.EMAIL_FROM || "noreply@eventnest.io",
+    from: process.env.EMAIL_FROM || "your-commercial-email@gmail.com",
     to,
     subject,
     text,

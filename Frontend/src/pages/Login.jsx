@@ -17,6 +17,7 @@ function Login() {
   const [loading, setLoading] = useState(false);
 
   const redirectPath = location.state?.from?.pathname || "/dashboard";
+  const notice = location.state?.notice || "";
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -66,7 +67,6 @@ function Login() {
     setErrors((prev) => ({ ...prev, submit: "" }));
 
     try {
-      // TEMPORARY MOCK API CALL: replace with POST /api/auth/login later.
       await login({
         email: formData.email.trim(),
         password: formData.password,
@@ -92,6 +92,8 @@ function Login() {
             </div>
 
             <form onSubmit={handleSubmit} className="login-form">
+              {notice ? <div className="info-message">{notice}</div> : null}
+
               {errors.submit && (
                 <div className="error-message">
                   <span className="error-icon">!</span>
@@ -141,7 +143,7 @@ function Login() {
                   />
                   <span>Remember me</span>
                 </label>
-                <Link to="/login" className="forgot-link">
+                <Link to="/forgot-password" className="forgot-link">
                   Forgot password?
                 </Link>
               </div>
@@ -163,19 +165,6 @@ function Login() {
                 </p>
               </div>
             </form>
-
-            <div className="divider">
-              <span>Or continue with</span>
-            </div>
-
-            <div className="social-login">
-              <button className="social-btn" type="button" disabled>
-                Google (coming soon)
-              </button>
-              <button className="social-btn" type="button" disabled>
-                GitHub (coming soon)
-              </button>
-            </div>
 
             <div className="divider">
               <span>Demo accounts</span>

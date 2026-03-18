@@ -90,6 +90,26 @@ async function createNotification({
   });
 }
 
+async function sendEmailWithRetry(message, maxAttempts = 2) {
+  let lastError = null;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    try {
+      return await sendEmail(message);
+    } catch (error) {
+      lastError = error;
+
+      if (attempt === maxAttempts) {
+        throw error;
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, attempt * 250));
+    }
+  }
+
+  throw lastError;
+}
+
 app.disable("x-powered-by");
 
 app.use(
@@ -177,7 +197,7 @@ app.post("/api/v1/notifications/send", async (req, res) => {
   try {
     let emailResult = null;
     if (channel === "email" && recipient) {
-      emailResult = await sendEmail({
+      emailResult = await sendEmailWithRetry({
         to: recipient,
         subject: subject || title,
         text: message,
@@ -267,7 +287,7 @@ app.post("/api/v1/notifications/event-order-created", async (req, res) => {
       const customerMessage = `Order confirmed for ${eventTitle}. Ticket: ${ticketCode}.`;
 
       if (recipient) {
-        await sendEmail({
+        await sendEmailWithRetry({
           to: recipient,
           subject: `Your booking for ${eventTitle}`,
           text: customerMessage,
@@ -293,7 +313,7 @@ app.post("/api/v1/notifications/event-order-created", async (req, res) => {
       const organizerMessage = `${purchaserName} booked ${quantity} ticket(s) for ${eventTitle}.`;
 
       if (organizerRecipient) {
-        await sendEmail({
+        await sendEmailWithRetry({
           to: organizerRecipient,
           subject: `New booking for ${eventTitle}`,
           text: organizerMessage,
@@ -383,7 +403,7 @@ app.post("/api/v1/notifications/reminder", async (req, res) => {
     let emailResult = null;
 
     if (resolvedChannel === "email" && recipient) {
-      emailResult = await sendEmail({
+      emailResult = await sendEmailWithRetry({
         to: recipient,
         subject: notificationTitle,
         text: notificationMessage,

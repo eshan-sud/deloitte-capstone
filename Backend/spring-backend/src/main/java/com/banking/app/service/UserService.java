@@ -49,6 +49,13 @@ public class UserService {
         return userRepository.findAll().stream().map(UserResponse::new).toList();
     }
 
+    @Transactional(readOnly = true)
+    public UserResponse getUserById(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        return new UserResponse(user);
+    }
+
     @Transactional
     public UserResponse updateUserStatus(String requesterEmail, Long targetUserId, boolean isActive) {
         User requester = findByEmailOrThrow(requesterEmail);

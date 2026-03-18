@@ -10,6 +10,7 @@ import { springApi } from "../services/springApi";
 
 const AuthContext = createContext(null);
 const TOKEN_STORAGE_KEY = "eventnest_auth_token";
+const USER_STORAGE_KEY = "eventnest_auth_user";
 
 function getStoredToken() {
   return localStorage.getItem(TOKEN_STORAGE_KEY);
@@ -19,8 +20,26 @@ function setStoredToken(token) {
   localStorage.setItem(TOKEN_STORAGE_KEY, token);
 }
 
+function getStoredUser() {
+  try {
+    const rawUser = localStorage.getItem(USER_STORAGE_KEY);
+    return rawUser ? JSON.parse(rawUser) : null;
+  } catch {
+    localStorage.removeItem(USER_STORAGE_KEY);
+    return null;
+  }
+}
+
+function setStoredUser(user) {
+  localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
+}
+
 function clearStoredToken() {
   localStorage.removeItem(TOKEN_STORAGE_KEY);
+}
+
+function clearStoredUser() {
+  localStorage.removeItem(USER_STORAGE_KEY);
 }
 
 export function AuthProvider({ children }) {
@@ -30,18 +49,27 @@ export function AuthProvider({ children }) {
 
   const restoreSession = useCallback(async () => {
     const savedToken = getStoredToken();
+    const savedUser = getStoredUser();
 
     if (!savedToken) {
+      clearStoredUser();
       setIsLoading(false);
       return;
+    }
+
+    if (savedUser) {
+      setToken(savedToken);
+      setUser(savedUser);
     }
 
     try {
       const response = await springApi.getCurrentUser(savedToken);
       setToken(savedToken);
       setUser(response.user);
+      setStoredUser(response.user);
     } catch {
       clearStoredToken();
+      clearStoredUser();
       setToken("");
       setUser(null);
     } finally {
@@ -58,6 +86,7 @@ export function AuthProvider({ children }) {
     setToken(response.token);
     setUser(response.user);
     setStoredToken(response.token);
+    setStoredUser(response.user);
     return response.user;
   }, []);
 
@@ -66,11 +95,13 @@ export function AuthProvider({ children }) {
     setToken(response.token);
     setUser(response.user);
     setStoredToken(response.token);
+    setStoredUser(response.user);
     return response.user;
   }, []);
 
   const logout = useCallback(() => {
     clearStoredToken();
+    clearStoredUser();
     setToken("");
     setUser(null);
   }, []);
@@ -82,6 +113,7 @@ export function AuthProvider({ children }) {
 
     const response = await springApi.getCurrentUser(token);
     setUser(response.user);
+    setStoredUser(response.user);
     return response.user;
   }, [token]);
 
@@ -93,6 +125,7 @@ export function AuthProvider({ children }) {
 
       const response = await springApi.updateProfile(token, updates);
       setUser(response.user);
+      setStoredUser(response.user);
       return response.user;
     },
     [token],

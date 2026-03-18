@@ -3,6 +3,43 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import "./SignUp.css";
 
+const LEGAL_DOCUMENTS = {
+  terms: {
+    title: "Terms of Service",
+    sections: [
+      {
+        heading: "1. Platform Use",
+        body: "EventNest is provided for managing events, registrations, and attendee communication. You agree to use the platform only for lawful event operations and accurate record keeping.",
+      },
+      {
+        heading: "2. Organizer Responsibilities",
+        body: "Organizers are responsible for event accuracy, venue coordination, published schedules, pricing, and attendee-facing announcements. Misleading or duplicate listings may be removed.",
+      },
+      {
+        heading: "3. Account Security",
+        body: "You are responsible for keeping your credentials secure and for any activity performed through your account. Notify the project team if you believe your account has been compromised.",
+      },
+    ],
+  },
+  privacy: {
+    title: "Privacy Policy",
+    sections: [
+      {
+        heading: "1. Data Collected",
+        body: "The application stores profile details, authentication data, event records, orders, and notification history needed to operate the capstone workflow.",
+      },
+      {
+        heading: "2. How Data Is Used",
+        body: "Your data is used to authenticate users, manage bookings, support organizer workflows, and generate administrative reports across the project services.",
+      },
+      {
+        heading: "3. Demo Environment Notice",
+        body: "This sample project is intended for educational and demonstration use. Avoid entering sensitive personal data because local development environments may not provide production-grade security controls.",
+      },
+    ],
+  },
+};
+
 function SignUp() {
   const navigate = useNavigate();
   const { isAuthenticated, register } = useAuth();
@@ -17,6 +54,7 @@ function SignUp() {
   });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [activeDocument, setActiveDocument] = useState("");
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -85,7 +123,6 @@ function SignUp() {
     setErrors((prev) => ({ ...prev, submit: "" }));
 
     try {
-      // TEMPORARY MOCK API CALL: replace with POST /api/auth/register later.
       await register({
         firstName: formData.firstName.trim(),
         lastName: formData.lastName.trim(),
@@ -102,6 +139,8 @@ function SignUp() {
       setLoading(false);
     }
   };
+
+  const legalDocument = activeDocument ? LEGAL_DOCUMENTS[activeDocument] : null;
 
   return (
     <div className="signup-page">
@@ -217,15 +256,23 @@ function SignUp() {
                     checked={formData.agreeToTerms}
                     onChange={handleChange}
                   />
-                  <span>
+                  <span className="checkbox-copy">
                     I agree to the{" "}
-                    <Link to="/signup" className="link">
+                    <button
+                      type="button"
+                      className="link-button"
+                      onClick={() => setActiveDocument("terms")}
+                    >
                       Terms of Service
-                    </Link>{" "}
+                    </button>{" "}
                     and{" "}
-                    <Link to="/signup" className="link">
+                    <button
+                      type="button"
+                      className="link-button"
+                      onClick={() => setActiveDocument("privacy")}
+                    >
                       Privacy Policy
-                    </Link>
+                    </button>
                   </span>
                 </label>
                 {errors.agreeToTerms && (
@@ -283,6 +330,44 @@ function SignUp() {
           </div>
         </div>
       </div>
+
+      {legalDocument ? (
+        <div
+          className="legal-modal-backdrop"
+          onClick={() => setActiveDocument("")}
+        >
+          <div
+            className="legal-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="legal-modal-title"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="legal-modal-header">
+              <div>
+                <p className="legal-modal-kicker">Sample Legal Copy</p>
+                <h2 id="legal-modal-title">{legalDocument.title}</h2>
+              </div>
+              <button
+                type="button"
+                className="legal-modal-close"
+                onClick={() => setActiveDocument("")}
+              >
+                Close
+              </button>
+            </div>
+
+            <div className="legal-modal-body">
+              {legalDocument.sections.map((section) => (
+                <section key={section.heading} className="legal-section">
+                  <h3>{section.heading}</h3>
+                  <p>{section.body}</p>
+                </section>
+              ))}
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

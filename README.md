@@ -27,6 +27,22 @@ A polyglot event management system with admin, organiser, & customer roles, buil
 - Database: MySQL for persistent environments, H2 for local Spring smoke testing
 - Deployment: Dockerized local environment
 
+## Docker Compose Environment
+
+`docker-compose.yml` now reads root-level environment variables for MySQL, Spring, ASP.NET, Node DB URI, and frontend build API URLs.
+
+Create a root `.env` from `.env.example` before running compose:
+
+```bash
+copy .env.example .env
+```
+
+Then start the full stack:
+
+```bash
+docker compose up --build
+```
+
 ## Comands
 
 ============================================================================

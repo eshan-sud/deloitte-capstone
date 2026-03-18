@@ -117,6 +117,29 @@ function normalizeOrder(order = {}) {
   };
 }
 
+function normalizeVenueConflict(conflict = {}) {
+  return {
+    eventId: toId(conflict.eventId),
+    title: conflict.title || "",
+    status: conflict.status || "",
+    organizerId: toId(conflict.organizerId),
+    organizerName: conflict.organizerName || "",
+    startAt: normalizeDateTime(conflict.startAt),
+    endAt: normalizeDateTime(conflict.endAt),
+  };
+}
+
+function normalizeVenueAvailability(data = {}) {
+  return {
+    venueId: toId(data.venueId),
+    venueName: data.venueName || "",
+    requestedStartAt: normalizeDateTime(data.requestedStartAt),
+    requestedEndAt: normalizeDateTime(data.requestedEndAt),
+    available: Boolean(data.available),
+    conflicts: (data.conflicts || []).map(normalizeVenueConflict),
+  };
+}
+
 function toEventRequest(payload) {
   return {
     title: payload.title,
@@ -161,6 +184,27 @@ export const springApi = {
         token: data.token || "",
         user: normalizeUser(data.user),
       };
+    } catch (error) {
+      throw new Error(getErrorMessage(error));
+    }
+  },
+
+  async forgotPassword(payload) {
+    try {
+      const response = await springClient.post(
+        "/auth/forgot-password",
+        payload,
+      );
+      return extractEnvelope(response) || {};
+    } catch (error) {
+      throw new Error(getErrorMessage(error));
+    }
+  },
+
+  async resetPassword(payload) {
+    try {
+      const response = await springClient.post("/auth/reset-password", payload);
+      return extractEnvelope(response) || {};
     } catch (error) {
       throw new Error(getErrorMessage(error));
     }
@@ -211,6 +255,21 @@ export const springApi = {
     }
   },
 
+  async getUserById(token, userId) {
+    try {
+      const response = await springClient.get(
+        `/users/${userId}`,
+        buildAuthConfig(token),
+      );
+
+      return {
+        user: normalizeUser(extractEnvelope(response)),
+      };
+    } catch (error) {
+      throw new Error(getErrorMessage(error));
+    }
+  },
+
   async updateUserStatus(token, userId, { isActive }) {
     try {
       const response = await springClient.patch(
@@ -250,6 +309,23 @@ export const springApi = {
       return {
         venues: (extractEnvelope(response) || []).map(normalizeVenue),
       };
+    } catch (error) {
+      throw new Error(getErrorMessage(error));
+    }
+  },
+
+  async checkVenueAvailability({ venueId, startAt, endAt, excludeEventId }) {
+    try {
+      const response = await springClient.get("/venues/availability", {
+        params: {
+          venueId,
+          startAt,
+          endAt,
+          excludeEventId: excludeEventId || undefined,
+        },
+      });
+
+      return normalizeVenueAvailability(extractEnvelope(response));
     } catch (error) {
       throw new Error(getErrorMessage(error));
     }

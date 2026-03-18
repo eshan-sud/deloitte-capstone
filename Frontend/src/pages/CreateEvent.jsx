@@ -32,6 +32,24 @@ function combineDateAndTime(dateValue, timeValue) {
   return new Date(`${dateValue}T${timeValue}:00`).toISOString();
 }
 
+function formatConflictWindow(startAt, endAt) {
+  if (!startAt || !endAt) {
+    return "";
+  }
+
+  const startDate = new Date(startAt);
+  const endDate = new Date(endAt);
+
+  if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) {
+    return "";
+  }
+
+  return `${startDate.toLocaleString()} to ${endDate.toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+  })}`;
+}
+
 function CreateEvent() {
   const { eventId } = useParams();
   const navigate = useNavigate();
@@ -58,6 +76,12 @@ function CreateEvent() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [availability, setAvailability] = useState({
+    checking: false,
+    available: null,
+    conflicts: [],
+    error: "",
+  });
 
   const venueLabel = useMemo(() => {
     return venues.find((venue) => venue.id === formData.venueId)?.name || "";
@@ -124,6 +148,89 @@ function CreateEvent() {
     };
   }, [eventId, isEditMode]);
 
+  useEffect(() => {
+    if (
+      !formData.venueId ||
+      !formData.date ||
+      !formData.startTime ||
+      !formData.endTime
+    ) {
+      setAvailability({
+        checking: false,
+        available: null,
+        conflicts: [],
+        error: "",
+      });
+      return;
+    }
+
+    const startAt = combineDateAndTime(formData.date, formData.startTime);
+    const endAt = combineDateAndTime(formData.date, formData.endTime);
+
+    if (new Date(endAt) <= new Date(startAt)) {
+      setAvailability({
+        checking: false,
+        available: null,
+        conflicts: [],
+        error:
+          "Choose an end time after the start time to check venue availability.",
+      });
+      return;
+    }
+
+    let ignore = false;
+
+    async function checkAvailability() {
+      setAvailability((previous) => ({
+        ...previous,
+        checking: true,
+        error: "",
+      }));
+
+      try {
+        const response = await springApi.checkVenueAvailability({
+          venueId: formData.venueId,
+          startAt,
+          endAt,
+          excludeEventId: isEditMode ? eventId : undefined,
+        });
+
+        if (!ignore) {
+          setAvailability({
+            checking: false,
+            available: response.available,
+            conflicts: response.conflicts,
+            error: "",
+          });
+        }
+      } catch (availabilityError) {
+        if (!ignore) {
+          setAvailability({
+            checking: false,
+            available: null,
+            conflicts: [],
+            error:
+              availabilityError.message ||
+              "Unable to verify venue availability right now.",
+          });
+        }
+      }
+    }
+
+    checkAvailability();
+
+    return () => {
+      ignore = true;
+    };
+  }, [
+    eventId,
+    formData.date,
+    formData.endTime,
+    formData.startTime,
+    formData.venueId,
+    isEditMode,
+  ]);
+
   const handleChange = (event) => {
     const { name, value } = event.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -155,6 +262,16 @@ function CreateEvent() {
 
     if (new Date(endAt) <= new Date(startAt)) {
       setError("End time must be after start time.");
+      return;
+    }
+
+    if (availability.checking) {
+      setError("Wait for the venue availability check to finish.");
+      return;
+    }
+
+    if (availability.available === false) {
+      setError("Selected venue is not available for the requested time slot.");
       return;
     }
 
@@ -298,6 +415,35 @@ function CreateEvent() {
                   </option>
                 ))}
               </select>
+              {availability.error ? (
+                <span className="availability-note availability-note-warning">
+                  {availability.error}
+                </span>
+              ) : null}
+              {!availability.error && availability.checking ? (
+                <span className="availability-note">
+                  Checking venue availability...
+                </span>
+              ) : null}
+              {!availability.error &&
+              !availability.checking &&
+              availability.available === true ? (
+                <span className="availability-note availability-note-success">
+                  Venue is available for this time slot.
+                </span>
+              ) : null}
+              {!availability.error &&
+              !availability.checking &&
+              availability.available === false ? (
+                <span className="availability-note availability-note-warning">
+                  {availability.conflicts.length === 1
+                    ? `This venue is already booked for ${availability.conflicts[0].title} (${formatConflictWindow(
+                        availability.conflicts[0].startAt,
+                        availability.conflicts[0].endAt,
+                      )}).`
+                    : `This venue already has ${availability.conflicts.length} overlapping events in the selected time range.`}
+                </span>
+              ) : null}
             </label>
 
             <label>

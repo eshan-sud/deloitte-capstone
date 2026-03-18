@@ -2,8 +2,11 @@ package com.banking.app.controller;
 
 import com.banking.app.dto.AuthResponse;
 import com.banking.app.dto.ApiResponse;
+import com.banking.app.dto.ForgotPasswordRequest;
+import com.banking.app.dto.ForgotPasswordResponse;
 import com.banking.app.dto.LoginRequest;
 import com.banking.app.dto.RegisterRequest;
+import com.banking.app.dto.ResetPasswordRequest;
 import com.banking.app.dto.UserResponse;
 import com.banking.app.service.AuthService;
 import jakarta.validation.Valid;
@@ -35,6 +38,21 @@ public class AuthController {
     public ResponseEntity<ApiResponse<AuthResponse>> login(@Valid @RequestBody LoginRequest request) {
         AuthResponse response = authService.login(request);
         return ResponseEntity.ok(ApiResponse.success("Login successful", response));
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<ApiResponse<ForgotPasswordResponse>> forgotPassword(
+            @Valid @RequestBody ForgotPasswordRequest request) {
+        ForgotPasswordResponse response = authService.forgotPassword(request);
+        return ResponseEntity.ok(ApiResponse.success(
+                "If an account exists for that email, a password reset token has been prepared.",
+                response));
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<ApiResponse<Object>> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        authService.resetPassword(request);
+        return ResponseEntity.ok(ApiResponse.success("Password reset successful", Map.of("reset", true)));
     }
 
     @GetMapping("/me")

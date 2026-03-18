@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -36,4 +37,24 @@ public interface EventRepository extends JpaRepository<Event, Long> {
             @Param("category") String category,
             @Param("status") EventStatus status,
             @Param("includeDrafts") boolean includeDrafts);
+
+        boolean existsByOrganizerIdAndTitleIgnoreCase(Long organizerId, String title);
+
+        boolean existsByOrganizerIdAndTitleIgnoreCaseAndIdNot(Long organizerId, String title, Long id);
+
+        @EntityGraph(attributePaths = {"venue", "organizer"})
+        @Query("""
+          SELECT e FROM Event e
+          WHERE e.venue.id = :venueId
+            AND (:excludeEventId IS NULL OR e.id <> :excludeEventId)
+            AND e.status <> com.banking.app.entity.EventStatus.CANCELLED
+            AND e.startAt < :endAt
+            AND e.endAt > :startAt
+          ORDER BY e.startAt ASC
+          """)
+        List<Event> findVenueConflicts(
+          @Param("venueId") Long venueId,
+          @Param("startAt") LocalDateTime startAt,
+          @Param("endAt") LocalDateTime endAt,
+          @Param("excludeEventId") Long excludeEventId);
 }

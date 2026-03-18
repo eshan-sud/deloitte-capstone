@@ -5,6 +5,8 @@
 node_modules/
 */node_modules/
 file-structure.txt
+.env
+!.env.example
 
 # Database
 Database/*.env
