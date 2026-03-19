@@ -1,4 +1,4 @@
-# Event Management System
+# Deloitte Capstone Project - Event Management System (EventNest)
 
 A polyglot event management system with admin, organiser, & customer roles, built for the purpose of completing the Deloitte Capstone
 
@@ -64,9 +64,8 @@ docker compose up --build
 
 ## Comands
 
-============================================================================
-SERVICE STARTUP COMMAND
-============================================================================
+### SERVICE STARTUP COMMAND
+
 From project root:
 
 - npm install (if you haven't already)
@@ -82,18 +81,14 @@ Services will be available at:
 
 > Note: Stop all services: Press Ctrl+C in the terminal
 
-============================================================================
-INDIVIDUAL SERVICE STARTUP (if needed)
-============================================================================
+### INDIVIDUAL SERVICE STARTUP (if needed)
 
 - Spring Boot: `npm run start:spring` (or: cd Backend/spring-backend && mvn spring-boot:run)
 - ASP.NET: `npm run start:dotnet` (or: cd Backend/dotnet-backend && dotnet run)
 - Node: `npm run start:node` (or: cd Backend/node-backend && npm start)
 - Frontend: `npm run start:frontend` (or: cd Frontend && npm run dev)
 
-============================================================================
-BUILD COMMANDS
-============================================================================
+### BUILD COMMANDS
 
 - Build all: `npm run build-all`
 - Build frontend: `npm run build:frontend` (or: `cd Frontend && npm run build`)
