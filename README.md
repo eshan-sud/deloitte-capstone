@@ -1,6 +1,17 @@
 # Deloitte Capstone Project - Event Management System (EventNest)
 
-A polyglot event management system with admin, organiser, & customer roles, built for the purpose of completing the Deloitte Capstone
+![Platform](https://img.shields.io/badge/platform-Web%20%7C%20API-blue)
+![Frontend](https://img.shields.io/badge/frontend-React%20%2B%20Vite-61DAFB)
+![Backend](https://img.shields.io/badge/backend-Spring%20Boot%20%7C%20Node.js%20%7C%20ASP.NET-6DB33F)
+
+<!-- ![Backend](https://img.shields.io/badge/backend-Node.js-339933) -->
+<!-- ![Backend](https://img.shields.io/badge/backend-ASP.NET-512BD4) -->
+<!-- ![Backend](https://img.shields.io/badge/backend-Spring%20Boot-6DB33F) -->
+
+![Database](https://img.shields.io/badge/database-MySQL%20%7C%20MongoDB%20%7C%20H2-4479A1)
+![DevOps](https://img.shields.io/badge/devops-Docker%20%2F%20Compose-2496ED)
+
+A polyglot event management system with admin, organizer, & customer roles, built for the purpose of completing the Deloitte Capstone
 
 - **Spring Boot (Java):**
   - Auth Service (User registration, login, JWT, profile, roles)
