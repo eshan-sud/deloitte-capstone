@@ -2,86 +2,479 @@ openapi: 3.0.3
 info:
   title: EventNest ASP.NET Reporting API
   version: 1.0.0
+  description: |
+    ASP.NET reporting service for KPI summaries, budget variance, order category analytics,
+    CSV exports, and finance entries. Routes are served under /api/reports.
 servers:
   - url: http://localhost:5107/api
+tags:
+  - name: Health
+  - name: Reports
+  - name: Finance
 paths:
   /reports/health:
     get:
-      summary: Reporting health
+      tags: [Health]
+      operationId: reportingHealth
+      summary: Reporting service health
       responses:
         "200":
-          description: OK
+          description: Reporting health returned
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReportHealthEnvelope"
+
   /reports/health/live:
     get:
-      summary: Liveness probe
+      tags: [Health]
+      operationId: reportingLiveness
+      summary: Liveness probe endpoint
       responses:
         "200":
-          description: OK
+          description: Service is live
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Healthy
+
   /reports/summary:
     get:
-      summary: Reporting summary
+      tags: [Reports]
+      operationId: getReportingSummary
+      summary: Get KPI summary report
       security:
         - adminKey: []
+      parameters:
+        - $ref: "#/components/parameters/FromParam"
+        - $ref: "#/components/parameters/ToParam"
+        - $ref: "#/components/parameters/OrganizerIdParam"
+        - $ref: "#/components/parameters/StatusParam"
       responses:
         "200":
-          description: OK
+          description: Summary report generated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReportSummaryEnvelope"
+        "401":
+          $ref: "#/components/responses/MissingAdminKey"
+        "403":
+          $ref: "#/components/responses/InvalidAdminKey"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
   /reports/budget-vs-actual:
     get:
-      summary: Budget variance report
+      tags: [Reports]
+      operationId: getBudgetVsActual
+      summary: Get budget variance rows
       security:
         - adminKey: []
+      parameters:
+        - $ref: "#/components/parameters/FromParam"
+        - $ref: "#/components/parameters/ToParam"
+        - $ref: "#/components/parameters/OrganizerIdParam"
+        - $ref: "#/components/parameters/StatusParam"
       responses:
         "200":
-          description: OK
+          description: Budget variance report generated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BudgetVarianceEnvelope"
+        "401":
+          $ref: "#/components/responses/MissingAdminKey"
+        "403":
+          $ref: "#/components/responses/InvalidAdminKey"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
   /reports/orders-by-category:
     get:
-      summary: Orders by category
+      tags: [Reports]
+      operationId: getOrdersByCategory
+      summary: Get order counts grouped by category
       security:
         - adminKey: []
+      parameters:
+        - $ref: "#/components/parameters/FromParam"
+        - $ref: "#/components/parameters/ToParam"
+        - $ref: "#/components/parameters/OrganizerIdParam"
+        - $ref: "#/components/parameters/StatusParam"
       responses:
         "200":
-          description: OK
+          description: Order category report generated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderCategoryEnvelope"
+        "401":
+          $ref: "#/components/responses/MissingAdminKey"
+        "403":
+          $ref: "#/components/responses/InvalidAdminKey"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
   /reports/export:
     get:
-      summary: Export summary as CSV
+      tags: [Reports]
+      operationId: exportSummaryCsv
+      summary: Export summary report as CSV
       security:
         - adminKey: []
       parameters:
         - in: query
           name: format
+          required: false
           schema:
             type: string
             default: csv
+            enum: [csv]
+        - $ref: "#/components/parameters/FromParam"
+        - $ref: "#/components/parameters/ToParam"
+        - $ref: "#/components/parameters/OrganizerIdParam"
+        - $ref: "#/components/parameters/StatusParam"
       responses:
         "200":
-          description: CSV content
+          description: CSV export
+          content:
+            text/csv:
+              schema:
+                type: string
+                format: binary
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/MissingAdminKey"
+        "403":
+          $ref: "#/components/responses/InvalidAdminKey"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
   /reports/budget:
     post:
+      tags: [Finance]
+      operationId: createBudget
       summary: Create budget entry
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
+              $ref: "#/components/schemas/CreateBudgetRequest"
       responses:
         "201":
-          description: Created
+          description: Budget entry created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BudgetCreatedEnvelope"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
   /reports/expenses:
     post:
+      tags: [Finance]
+      operationId: createExpense
       summary: Create expense entry
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
+              $ref: "#/components/schemas/CreateExpenseRequest"
       responses:
         "201":
-          description: Created
+          description: Expense entry created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExpenseCreatedEnvelope"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
 components:
   securitySchemes:
     adminKey:
       type: apiKey
       in: header
       name: X-Admin-Key
+
+  parameters:
+    FromParam:
+      in: query
+      name: from
+      required: false
+      schema:
+        type: string
+        format: date-time
+    ToParam:
+      in: query
+      name: to
+      required: false
+      schema:
+        type: string
+        format: date-time
+    OrganizerIdParam:
+      in: query
+      name: organizerId
+      required: false
+      schema:
+        type: string
+    StatusParam:
+      in: query
+      name: status
+      required: false
+      schema:
+        type: string
+
+  responses:
+    BadRequest:
+      description: Request validation failed or unsupported input
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorEnvelope"
+    MissingAdminKey:
+      description: X-Admin-Key header missing for protected reporting route
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorEnvelope"
+    InvalidAdminKey:
+      description: X-Admin-Key provided but invalid
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorEnvelope"
+    InternalError:
+      description: Unhandled reporting service failure
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorEnvelope"
+
+  schemas:
+    EnvelopeMeta:
+      type: object
+      required: [success, message, timestamp]
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        errors:
+          nullable: true
+          oneOf:
+            - type: object
+              additionalProperties: true
+            - type: string
+
+    ErrorEnvelope:
+      allOf:
+        - $ref: "#/components/schemas/EnvelopeMeta"
+        - type: object
+          properties:
+            success:
+              type: boolean
+              example: false
+            data:
+              nullable: true
+              type: object
+              additionalProperties: true
+
+    ReportHealthEnvelope:
+      allOf:
+        - $ref: "#/components/schemas/EnvelopeMeta"
+        - type: object
+          required: [data]
+          properties:
+            data:
+              $ref: "#/components/schemas/ReportHealthData"
+
+    ReportSummaryEnvelope:
+      allOf:
+        - $ref: "#/components/schemas/EnvelopeMeta"
+        - type: object
+          required: [data]
+          properties:
+            data:
+              $ref: "#/components/schemas/ReportSummaryDto"
+
+    BudgetVarianceEnvelope:
+      allOf:
+        - $ref: "#/components/schemas/EnvelopeMeta"
+        - type: object
+          required: [data]
+          properties:
+            data:
+              type: array
+              items:
+                $ref: "#/components/schemas/BudgetVarianceRowDto"
+
+    OrderCategoryEnvelope:
+      allOf:
+        - $ref: "#/components/schemas/EnvelopeMeta"
+        - type: object
+          required: [data]
+          properties:
+            data:
+              type: array
+              items:
+                $ref: "#/components/schemas/OrderCategoryCountDto"
+
+    BudgetCreatedEnvelope:
+      allOf:
+        - $ref: "#/components/schemas/EnvelopeMeta"
+        - type: object
+          required: [data]
+          properties:
+            data:
+              $ref: "#/components/schemas/BudgetCreatedData"
+
+    ExpenseCreatedEnvelope:
+      allOf:
+        - $ref: "#/components/schemas/EnvelopeMeta"
+        - type: object
+          required: [data]
+          properties:
+            data:
+              $ref: "#/components/schemas/ExpenseCreatedData"
+
+    ReportHealthData:
+      type: object
+      properties:
+        service:
+          type: string
+        message:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+
+    ReportSummaryDto:
+      type: object
+      properties:
+        users:
+          type: integer
+          format: int64
+        events:
+          type: integer
+          format: int64
+        orders:
+          type: integer
+          format: int64
+        confirmedOrders:
+          type: integer
+          format: int64
+        cancelledOrders:
+          type: integer
+          format: int64
+        notificationsSent:
+          type: integer
+          format: int64
+        grossRevenue:
+          type: number
+          format: double
+        totalExpenses:
+          type: number
+          format: double
+        netRevenue:
+          type: number
+          format: double
+        fromDate:
+          type: string
+          format: date-time
+          nullable: true
+        toDate:
+          type: string
+          format: date-time
+          nullable: true
+        generatedAt:
+          type: string
+          format: date-time
+
+    BudgetVarianceRowDto:
+      type: object
+      properties:
+        budgetId:
+          type: string
+        eventId:
+          type: string
+        eventTitle:
+          type: string
+        plannedAmount:
+          type: number
+          format: double
+        actualAmount:
+          type: number
+          format: double
+        variance:
+          type: number
+          format: double
+
+    OrderCategoryCountDto:
+      type: object
+      properties:
+        category:
+          type: string
+        count:
+          type: integer
+          format: int64
+
+    CreateBudgetRequest:
+      type: object
+      required: [eventId, plannedAmount]
+      properties:
+        eventId:
+          type: string
+          minLength: 1
+          maxLength: 64
+        plannedAmount:
+          type: number
+          format: double
+          minimum: 0.01
+        note:
+          type: string
+          maxLength: 500
+
+    CreateExpenseRequest:
+      type: object
+      required: [eventId, category, amount]
+      properties:
+        eventId:
+          type: string
+          minLength: 1
+          maxLength: 64
+        category:
+          type: string
+          minLength: 2
+          maxLength: 100
+        amount:
+          type: number
+          format: double
+          minimum: 0.01
+        note:
+          type: string
+          maxLength: 500
+
+    BudgetCreatedData:
+      type: object
+      properties:
+        budgetId:
+          type: string
+
+    ExpenseCreatedData:
+      type: object
+      properties:
+        expenseId:
+          type: string

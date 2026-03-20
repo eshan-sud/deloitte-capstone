@@ -2,74 +2,164 @@ openapi: 3.0.3
 info:
   title: EventNest Node Notifications API
   version: 1.0.0
+  description: |
+    Notification service for test notifications, booking events, reminders, read-state updates,
+    and notification logs. Base URL already includes /api.
 servers:
   - url: http://localhost:4000/api
+tags:
+  - name: Health
+  - name: Notifications
 paths:
   /health:
     get:
-      summary: Service health
+      tags: [Health]
+      operationId: notificationHealth
+      summary: Notification service health
       responses:
         "200":
-          description: OK
+          description: Service healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+
   /v1/notifications/test:
     post:
-      summary: Test notification endpoint
+      tags: [Notifications]
+      operationId: testNotification
+      summary: Enqueue test notification payload
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TestNotificationRequest"
       responses:
         "202":
-          description: Accepted
+          description: Notification accepted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TestNotificationAcceptedResponse"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+
   /v1/notifications/send:
     post:
-      summary: Send notification
+      tags: [Notifications]
+      operationId: sendNotification
+      summary: Send a generic notification
+      description: Requires recipient or recipientUserId, title/subject, and message.
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
+              $ref: "#/components/schemas/SendNotificationRequest"
       responses:
         "202":
-          description: Accepted
+          description: Notification sent
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SendNotificationAcceptedResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
   /v1/notifications/event-order-created:
     post:
-      summary: Order-created notification trigger
+      tags: [Notifications]
+      operationId: sendOrderCreatedNotifications
+      summary: Send customer and/or organizer booking notifications
+      description: Requires eventTitle, ticketCode, and at least one recipient identity.
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
+              $ref: "#/components/schemas/EventOrderCreatedRequest"
       responses:
         "202":
-          description: Accepted
+          description: Booking notifications sent
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EventOrderCreatedAcceptedResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
   /v1/notifications/reminder:
     post:
-      summary: Reminder trigger
+      tags: [Notifications]
+      operationId: sendReminder
+      summary: Send reminder notification
+      description: Requires eventTitle and recipient or recipientUserId.
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
+              $ref: "#/components/schemas/ReminderRequest"
       responses:
         "202":
-          description: Accepted
+          description: Reminder sent
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReminderAcceptedResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
   /v1/notifications/my:
     get:
-      summary: Get notifications for a user
+      tags: [Notifications]
+      operationId: getMyNotifications
+      summary: List notifications by recipient identity
       parameters:
         - in: query
           name: recipientUserId
+          required: false
           schema:
             type: string
+          description: Internal user ID identity.
         - in: query
           name: recipient
+          required: false
           schema:
             type: string
+            format: email
+          description: Recipient email identity.
       responses:
         "200":
-          description: OK
+          description: Notifications fetched
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationListResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
   /v1/notifications/{id}/read:
     patch:
+      tags: [Notifications]
+      operationId: markNotificationRead
       summary: Mark one notification as read
       parameters:
         - in: path
@@ -82,25 +172,388 @@ paths:
         content:
           application/json:
             schema:
-              type: object
+              $ref: "#/components/schemas/NotificationIdentityRequest"
       responses:
         "200":
-          description: OK
+          description: Notification updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationUpdatedResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
   /v1/notifications/read-all:
     patch:
-      summary: Mark all notifications as read
+      tags: [Notifications]
+      operationId: markAllNotificationsRead
+      summary: Mark all notifications for recipient identity as read
       requestBody:
         required: false
         content:
           application/json:
             schema:
-              type: object
+              $ref: "#/components/schemas/NotificationIdentityRequest"
       responses:
         "200":
-          description: OK
+          description: Notifications updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationsBulkUpdatedResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
   /v1/notifications/logs:
     get:
-      summary: List notification logs
+      tags: [Notifications]
+      operationId: listNotificationLogs
+      summary: List recent notification logs
       responses:
         "200":
-          description: OK
+          description: Logs fetched
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationListResponse"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+components:
+  responses:
+    BadRequest:
+      description: Request payload/identity is invalid
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    NotFound:
+      description: Notification not found for provided identity
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    RateLimited:
+      description: Rate limiter rejected request
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/RateLimitResponse"
+    InternalError:
+      description: Notification send/fetch/update failure
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+
+  schemas:
+    HealthResponse:
+      type: object
+      required: [success, service, message, timestamp]
+      properties:
+        success:
+          type: boolean
+        service:
+          type: string
+        message:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+
+    ErrorResponse:
+      type: object
+      required: [success, message]
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+        error:
+          type: string
+          nullable: true
+
+    RateLimitResponse:
+      type: object
+      required: [success, message]
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: Too many requests. Please try again shortly.
+
+    Notification:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          example: ORDER
+        title:
+          type: string
+        message:
+          type: string
+        recipient:
+          type: string
+          nullable: true
+        recipientUserId:
+          type: string
+          nullable: true
+        channel:
+          type: string
+          enum: [email, in-app]
+        status:
+          type: string
+          example: SENT
+        isRead:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        readAt:
+          type: string
+          format: date-time
+          nullable: true
+        sentAt:
+          type: string
+          format: date-time
+          nullable: true
+        payload:
+          type: object
+          additionalProperties: true
+
+    NotificationIdentityRequest:
+      type: object
+      description: At least one identity field should be provided.
+      properties:
+        recipientUserId:
+          type: string
+        recipient:
+          type: string
+          format: email
+
+    TestNotificationRequest:
+      type: object
+      properties:
+        channel:
+          type: string
+          default: email
+        recipient:
+          type: string
+          format: email
+          default: demo@example.com
+
+    TestNotificationAcceptedResponse:
+      type: object
+      required: [success, message, data]
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        data:
+          type: object
+          properties:
+            channel:
+              type: string
+            recipient:
+              type: string
+            queuedAt:
+              type: string
+              format: date-time
+
+    SendNotificationRequest:
+      type: object
+      required: [message]
+      description: Provide recipient or recipientUserId, and subject or title.
+      properties:
+        type:
+          type: string
+          default: GENERIC
+        recipient:
+          type: string
+          format: email
+        recipientUserId:
+          type: string
+        channel:
+          type: string
+          default: email
+          enum: [email, in-app]
+        subject:
+          type: string
+        title:
+          type: string
+        message:
+          type: string
+        payload:
+          type: object
+          additionalProperties: true
+
+    SendNotificationAcceptedResponse:
+      type: object
+      required: [success, message, data]
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        data:
+          type: object
+          properties:
+            notification:
+              $ref: "#/components/schemas/Notification"
+            emailResult:
+              type: object
+              nullable: true
+              additionalProperties: true
+
+    EventOrderCreatedRequest:
+      type: object
+      required: [eventTitle, ticketCode]
+      description: Provide at least one recipient identity among customer/organizer fields.
+      properties:
+        recipient:
+          type: string
+          format: email
+        recipientUserId:
+          type: string
+        organizerRecipient:
+          type: string
+          format: email
+        organizerUserId:
+          type: string
+        purchaserName:
+          type: string
+          default: A customer
+        quantity:
+          type: integer
+          default: 1
+        eventTitle:
+          type: string
+        ticketCode:
+          type: string
+        eventId:
+          type: string
+          nullable: true
+        fromUserId:
+          type: string
+          nullable: true
+
+    EventOrderCreatedAcceptedResponse:
+      type: object
+      required: [success, message, data]
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        data:
+          type: object
+          properties:
+            notifications:
+              type: array
+              items:
+                $ref: "#/components/schemas/Notification"
+
+    ReminderRequest:
+      type: object
+      required: [eventTitle]
+      description: Provide recipient or recipientUserId.
+      properties:
+        recipient:
+          type: string
+          format: email
+        recipientUserId:
+          type: string
+        channel:
+          type: string
+          default: email
+          enum: [email, in-app]
+        subject:
+          type: string
+        title:
+          type: string
+        message:
+          type: string
+        eventTitle:
+          type: string
+        eventDate:
+          type: string
+        daysLeft:
+          type: integer
+
+    ReminderAcceptedResponse:
+      type: object
+      required: [success, message, data]
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        data:
+          type: object
+          properties:
+            notification:
+              $ref: "#/components/schemas/Notification"
+            emailResult:
+              type: object
+              nullable: true
+              additionalProperties: true
+
+    NotificationListResponse:
+      type: object
+      required: [success, data]
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            notifications:
+              type: array
+              items:
+                $ref: "#/components/schemas/Notification"
+
+    NotificationUpdatedResponse:
+      type: object
+      required: [success, message, data]
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        data:
+          type: object
+          properties:
+            notification:
+              $ref: "#/components/schemas/Notification"
+
+    NotificationsBulkUpdatedResponse:
+      type: object
+      required: [success, message, data]
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        data:
+          type: object
+          properties:
+            modifiedCount:
+              type: integer
