@@ -115,11 +115,11 @@ function MyOrders() {
                     {order.event?.title || "Event removed"}
                   </p>
                   <p className="list-item-meta">
-                    Order ID: {order.id} | Ticket: {order.ticketCode} |{" "}
+                    Order ID: {order.id} | Ticket: {order.ticketCode} |
                     {order.quantity} ticket(s)
                   </p>
                   <p className="list-item-meta">
-                    Placed on {formatDate(order.createdAt)} | Total INR{" "}
+                    Placed on {formatDate(order.createdAt)} | Total INR
                     {order.totalAmount}
                   </p>
                 </div>

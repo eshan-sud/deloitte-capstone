@@ -3,6 +3,8 @@ using System.Text;
 using aspnet_backend.Contracts;
 using aspnet_backend.Services;
 
+LoadLocalDotEnv();
+
 var builder = WebApplication.CreateBuilder(args);
 
 const string CorsPolicyName = "FrontendOrigins";
@@ -126,6 +128,70 @@ app.MapHealthChecks("/api/reports/health/live");
 app.MapControllers();
 
 app.Run();
+
+static void LoadLocalDotEnv()
+{
+    var candidatePaths = new[]
+    {
+        Path.Combine(Directory.GetCurrentDirectory(), ".env"),
+        Path.Combine(Directory.GetCurrentDirectory(), "Backend", "dotnet-backend", ".env")
+    };
+
+    foreach (var filePath in candidatePaths)
+    {
+        if (!File.Exists(filePath))
+        {
+            continue;
+        }
+
+        foreach (var line in File.ReadLines(filePath))
+        {
+            var trimmedLine = line.Trim();
+            if (string.IsNullOrWhiteSpace(trimmedLine) || trimmedLine.StartsWith('#'))
+            {
+                continue;
+            }
+
+            var separatorIndex = trimmedLine.IndexOf('=');
+            if (separatorIndex <= 0)
+            {
+                continue;
+            }
+
+            var key = trimmedLine[..separatorIndex].Trim();
+            if (key.StartsWith("export ", StringComparison.OrdinalIgnoreCase))
+            {
+                key = key["export ".Length..].Trim();
+            }
+
+            if (string.IsNullOrWhiteSpace(key) || !string.IsNullOrEmpty(Environment.GetEnvironmentVariable(key)))
+            {
+                continue;
+            }
+
+            var rawValue = trimmedLine[(separatorIndex + 1)..].Trim();
+            Environment.SetEnvironmentVariable(key, StripWrappingQuotes(rawValue));
+        }
+
+        return;
+    }
+}
+
+static string StripWrappingQuotes(string value)
+{
+    if (value.Length >= 2)
+    {
+        var firstCharacter = value[0];
+        var lastCharacter = value[^1];
+
+        if ((firstCharacter == '"' && lastCharacter == '"') || (firstCharacter == '\'' && lastCharacter == '\''))
+        {
+            return value[1..^1];
+        }
+    }
+
+    return value;
+}
 
 static bool FixedTimeEquals(string left, string right)
 {

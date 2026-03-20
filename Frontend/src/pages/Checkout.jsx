@@ -80,6 +80,7 @@ function Checkout() {
 
       try {
         await notificationApi.notifyOrderCreated({
+          eventId: event.id,
           recipient: user?.email,
           recipientUserId: user?.id,
           organizerUserId: event.organizerId,

@@ -51,7 +51,7 @@ function Home() {
   }, []);
 
   return (
-    <div className="home-page">
+    <>
       <section className="hero-section section">
         <div className="container">
           <div className="hero-content">
@@ -122,7 +122,6 @@ function Home() {
           </div>
         </div>
       </section>
-
       <section className="features-section section">
         <div className="container">
           <div className="section-header">
@@ -181,7 +180,7 @@ function Home() {
           </div>
         </div>
       </section>
-    </div>
+    </>
   );
 }
 

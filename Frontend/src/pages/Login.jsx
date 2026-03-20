@@ -158,8 +158,12 @@ function Login() {
 
               <div className="form-footer">
                 <p>
-                  Don't have an account?{" "}
-                  <Link to="/signup" className="signup-link">
+                  Don't have an account?
+                  <Link
+                    to="/signup"
+                    className="signup-link"
+                    style={{ marginLeft: "0.25rem" }}
+                  >
                     Sign up for free
                   </Link>
                 </p>

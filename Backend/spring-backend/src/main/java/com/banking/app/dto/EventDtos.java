@@ -41,15 +41,15 @@ public final class EventDtos {
     public static class EventRequest {
 
         @NotBlank(message = "Title is required")
-        @Size(min = 3, max = 140)
+        @Size(min = 3, max = 140, message = "Title must be between 3 and 140 characters")
         private String title;
 
         @NotBlank(message = "Category is required")
-        @Size(min = 2, max = 80)
+        @Size(min = 2, max = 80, message = "Category must be between 2 and 80 characters")
         private String category;
 
         @NotBlank(message = "Description is required")
-        @Size(min = 10, max = 4000)
+        @Size(min = 10, max = 4000, message = "Description must be between 10 and 4000 characters")
         private String description;
 
         @NotNull(message = "Venue ID is required")

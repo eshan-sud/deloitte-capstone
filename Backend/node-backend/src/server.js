@@ -10,6 +10,7 @@ const rateLimit = require("express-rate-limit");
 
 const { connectDb, Notification } = require("./db");
 const { sendEmail } = require("./email");
+const { getUserEmailById, getOrganizerEmailByEventId } = require("./db-mysql");
 
 const app = express();
 
@@ -262,6 +263,8 @@ app.post("/api/v1/notifications/event-order-created", async (req, res) => {
     quantity = 1,
     eventTitle,
     ticketCode,
+    eventId = null,
+    fromUserId = null,
   } = req.body || {};
 
   if (
@@ -282,6 +285,14 @@ app.post("/api/v1/notifications/event-order-created", async (req, res) => {
   try {
     const notifications = [];
 
+    // Resolve the sender email dynamically
+    let senderEmail = null;
+    if (eventId) {
+      senderEmail = await getOrganizerEmailByEventId(eventId);
+    } else if (fromUserId) {
+      senderEmail = await getUserEmailById(fromUserId);
+    }
+
     if (recipient || recipientUserId) {
       const customerTitle = "Order confirmed";
       const customerMessage = `Order confirmed for ${eventTitle}. Ticket: ${ticketCode}.`;
@@ -292,6 +303,7 @@ app.post("/api/v1/notifications/event-order-created", async (req, res) => {
           subject: `Your booking for ${eventTitle}`,
           text: customerMessage,
           html: `<p>${customerMessage}</p>`,
+          from: senderEmail,
         });
       }
 
@@ -318,6 +330,7 @@ app.post("/api/v1/notifications/event-order-created", async (req, res) => {
           subject: `New booking for ${eventTitle}`,
           text: organizerMessage,
           html: `<p>${organizerMessage}</p>`,
+          from: senderEmail,
         });
       }
 

@@ -160,7 +160,7 @@ function Dashboard() {
 
         {error ? <div className="alert error">{error}</div> : null}
         {!error && summary?.warningMessage ? (
-          <div className="alert">{summary.warningMessage}</div>
+          <div className="alert error">{summary.warningMessage}</div>
         ) : null}
 
         {isLoading ? (
@@ -204,7 +204,7 @@ function Dashboard() {
                         {formatDateTime(event.startAt)}
                       </p>
                       <p className="list-item-meta">
-                        {event.venue?.name || "Venue TBD"} |{" "}
+                        {event.venue?.name || "Venue TBD"} |
                         {Number(event.seatsLeft || 0)} seats left
                       </p>
                     </div>

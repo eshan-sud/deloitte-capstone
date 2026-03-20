@@ -257,19 +257,21 @@ function SignUp() {
                     onChange={handleChange}
                   />
                   <span className="checkbox-copy">
-                    I agree to the{" "}
+                    I agree to the
                     <button
                       type="button"
                       className="link-button"
                       onClick={() => setActiveDocument("terms")}
+                      style={{ marginLeft: "0.25rem", marginRight: "0.25rem" }}
                     >
                       Terms of Service
-                    </button>{" "}
-                    and{" "}
+                    </button>
+                    and
                     <button
                       type="button"
                       className="link-button"
                       onClick={() => setActiveDocument("privacy")}
+                      style={{ marginLeft: "0.25rem" }}
                     >
                       Privacy Policy
                     </button>
@@ -290,7 +292,7 @@ function SignUp() {
 
               <div className="form-footer">
                 <p>
-                  Already have an account?{" "}
+                  Already have an account?
                   <Link to="/login" className="login-link">
                     Sign in
                   </Link>

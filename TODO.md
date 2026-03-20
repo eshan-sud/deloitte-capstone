@@ -111,6 +111,12 @@ Status legend:
 - [x] Trigger Node notifications after successful order creation
 - [x] Log notification requests & delivery status
 - [x] Add Dockerfile for node-backend
+- [x] Dynamic sender email (FROM field) based on organizer from database
+- [x] MySQL integration in Node backend to fetch organizer email by event ID
+- [x] Gmail SMTP configuration for email service
+- [x] Email password fallback (EMAIL_PASS || EMAIL_PASSWORD)
+- [x] Frontend passes eventId to notification endpoint on checkout
+- [x] End-to-end email flow: organizer sends confirmation to customer
 
 ## Backend (ASP.NET)
 
@@ -198,6 +204,7 @@ Status legend:
 - [ ] Capture checkout & order history screenshots
 - [ ] Create user flow diagram: Browse Event -> Checkout -> Confirmation -> Notification
 - [x] User can register/book event & receive notification record
+- [x] Booking notifications sent with organizer email as sender
 - [ ] Update module details doc with reporting formulas & assumptions
 - [x] Add Dockerfile for frontend
 - [x] Add Dockerfile for dotnet-backend

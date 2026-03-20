@@ -1,5 +1,16 @@
 import axios from "axios";
 
+function formatFieldLabel(fieldName) {
+  if (!fieldName || typeof fieldName !== "string") {
+    return "field";
+  }
+
+  return fieldName
+    .replace(/([A-Z])/g, " $1")
+    .replace(/^./, (value) => value.toUpperCase())
+    .trim();
+}
+
 function resolveBaseUrl(envName, fallback) {
   const value = import.meta.env[envName];
 
@@ -75,9 +86,15 @@ export function getErrorMessage(error) {
     typeof responseData.errors === "object" &&
     !Array.isArray(responseData.errors)
   ) {
-    const nestedErrors = Object.values(responseData.errors)
-      .flatMap((value) => (Array.isArray(value) ? value : [value]))
-      .filter((value) => typeof value === "string" && value.trim());
+    const nestedErrors = Object.entries(responseData.errors).flatMap(
+      ([fieldName, value]) => {
+        const messages = Array.isArray(value) ? value : [value];
+
+        return messages
+          .filter((entry) => typeof entry === "string" && entry.trim())
+          .map((entry) => `${formatFieldLabel(fieldName)}: ${entry}`);
+      },
+    );
 
     if (nestedErrors.length > 0) {
       return nestedErrors.join(", ");

@@ -295,6 +295,8 @@ public sealed class ReportsService(IConfiguration configuration, ILogger<Reports
     {
         await using var connection = await OpenConnectionAsync(cancellationToken);
 
+        await EnsureBudgetsTableAsync(connection, cancellationToken);
+
         if (!await TableExistsAsync(connection, "budgets", cancellationToken))
         {
             throw new ReportDataException("Budgets table is not available in the current database.", StatusCodes.Status503ServiceUnavailable);
@@ -347,6 +349,8 @@ public sealed class ReportsService(IConfiguration configuration, ILogger<Reports
     public async Task<long> CreateExpenseAsync(CreateExpenseRequest request, CancellationToken cancellationToken)
     {
         await using var connection = await OpenConnectionAsync(cancellationToken);
+
+        await EnsureExpensesTableAsync(connection, cancellationToken);
 
         if (!await TableExistsAsync(connection, "expenses", cancellationToken))
         {
@@ -934,6 +938,45 @@ public sealed class ReportsService(IConfiguration configuration, ILogger<Reports
         var scalar = await command.ExecuteScalarAsync(cancellationToken);
         var count = Convert.ToInt64(scalar, CultureInfo.InvariantCulture);
         return count > 0;
+    }
+
+    private static async Task EnsureBudgetsTableAsync(MySqlConnection connection, CancellationToken cancellationToken)
+    {
+        const string sql = """
+            CREATE TABLE IF NOT EXISTS `budgets` (
+                `id` BIGINT NOT NULL AUTO_INCREMENT,
+                `eventId` VARCHAR(64) NOT NULL,
+                `plannedAmount` DECIMAL(18,2) NOT NULL,
+                `note` TEXT NULL,
+                `createdAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (`id`),
+                KEY `idx_budgets_event` (`eventId`)
+            );
+            """;
+
+        await using var command = connection.CreateCommand();
+        command.CommandText = sql;
+        await command.ExecuteNonQueryAsync(cancellationToken);
+    }
+
+    private static async Task EnsureExpensesTableAsync(MySqlConnection connection, CancellationToken cancellationToken)
+    {
+        const string sql = """
+            CREATE TABLE IF NOT EXISTS `expenses` (
+                `id` BIGINT NOT NULL AUTO_INCREMENT,
+                `eventId` VARCHAR(64) NOT NULL,
+                `category` VARCHAR(120) NOT NULL,
+                `amount` DECIMAL(18,2) NOT NULL,
+                `note` TEXT NULL,
+                `createdAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (`id`),
+                KEY `idx_expenses_event` (`eventId`)
+            );
+            """;
+
+        await using var command = connection.CreateCommand();
+        command.CommandText = sql;
+        await command.ExecuteNonQueryAsync(cancellationToken);
     }
 
     private static async Task<bool> ColumnExistsAsync(MySqlConnection connection, string tableName, string columnName, CancellationToken cancellationToken)
