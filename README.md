@@ -49,7 +49,7 @@ Then start the full stack:
 docker compose up --build
 ```
 
-## Frozen Module List & Ownership
+## Module List
 
 | Module                                 | Owner Service                          | Supporting Services                                                  | Frontend Surfaces                                                                      |
 | -------------------------------------- | -------------------------------------- | -------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
@@ -59,14 +59,32 @@ docker compose up --build
 | Notifications and Logs                 | Node.js (`Backend/node-backend`)       | Triggered by Spring order flow                                       | `/notifications`                                                                       |
 | Reporting and Finance                  | ASP.NET (`Backend/dotnet-backend`)     | MySQL event/order/user data from Spring domain                       | `/admin/reports`, organizer budget sync from create-event                              |
 
+## Features
+
+- Role-based platform with ADMIN, ORGANIZER, and CUSTOMER experiences
+- Secure authentication with signup, login, JWT sessions, and profile management
+- Event lifecycle management with create, edit, delete, publish states, and venue availability checks
+- Public event discovery with event listing, details view, and filtering/search support
+- Ticket booking and order management with checkout, order history, and cancellation flow
+- Oversell protection through capacity validation during order placement
+- Notification service with booking confirmations, reminders, read-state updates, and notification logs
+- Admin reporting with KPI summaries, budget vs actual tracking, expense entries, and CSV export
+- Polyglot microservice architecture using Spring Boot, Node.js, and ASP.NET with React frontend
+- Dockerized local deployment using a single compose workflow with MySQL and MongoDB
+
 ## Documentation Index
 
-- Event module details: `Docs/features-event-module.md`
-- Backend endpoint map: `Docs/backend-endpoint-map.md`
-- Frontend route to endpoint map: `Docs/page-route-endpoint-map.md`
-- Unified API envelope definition: `Docs/api-response-envelope.md`
-- Auth request/response samples: `Docs/auth-request-response-samples.md`
-- OpenAPI bundle: `Docs/openapi/`
+- Diagrams:
+  - `Docs/Diagrams/ER Diagram.png`
+  - `Docs/Diagrams/HLD.png`
+  - `Docs/Diagrams/Wireframe.png`
+- OpenAPI Specifications: `Docs/OpenAPI/`
+- Postman:
+  - `Docs/Postman/All-Services.postman_collection.json`
+  - `Docs/Postman/Local.postman_environment.json`
+- Screenshots: `Docs/Screenshots/`
+- Documentation - Frontend/Backend/Database: `Docs/docs.md`
+- User Flows: `Docs/User Flows/`
 
 ## Comands
 

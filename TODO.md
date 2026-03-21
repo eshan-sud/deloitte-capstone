@@ -2,7 +2,7 @@
 
 Status legend:
 
-- `[x]` = implemented in current `Frontend/` or `Backend/` code
+- `[x]` = completed/implemented
 - `[ ]` = pending
 
 ## Frontend
@@ -32,9 +32,9 @@ Status legend:
 - [x] Connect frontend Create Event form to live API
 - [x] Add error banners/loading states for event pages
 - [x] Build frontend Admin Reports page (`/admin/reports`)
-- [ ] Frontend URLs/pages document (final)
-- [ ] UI screenshots pack (final)
-- [ ] Screenshots of application UI
+- [x] Frontend URLs/pages document (final)
+- [x] UI screenshots pack (final)
+- [x] Screenshots of application UI
 - [x] Responsive UI for desktop & mobile
 
 ## Backend (Spring)
@@ -141,7 +141,7 @@ Status legend:
 - [x] Show key KPIs: total events, attendees, orders, revenue, expense, net
 - [x] Add input validation for budget/expense entries
 - [x] Add basic auth guard for admin reporting routes
-- [ ] Capture reporting screenshots
+- [x] Capture reporting screenshots
 - [x] Admin can view real report metrics & budget summary
 
 ## Project-wide / Docs / DevOps
@@ -158,54 +158,39 @@ Status legend:
 - [x] Global exception handling exists
 - [x] Role model (admin/organizer/customer) exists beyond default ROLE_USER
 - [x] Middleware hardening exists (`cors`, `helmet`, `compression`, `morgan`, rate limiter)
-- [x] OpenAPI is enabled in development
 - [x] CORS policy for frontend origins exists
 - [x] Database SQL is aligned to event management domain (current script still banking-focused)
 - [x] Dockerfiles for services exist
 - [x] `docker-compose.yml` exists
-- [ ] Postman collection exists
-- [ ] OpenAPI export/package for all services exists
-- [ ] ER diagram, wireframes, & user-flow docs are finalized in submission format
+- [x] OpenAPI export/package for all services exists
 - [x] Frontend checkout page & order history page
 - [x] Notification logs table & persistence
-- [x] `/` Home
-- [x] `/events` Events list (mock data, filterable)
-- [x] `/dashboard` Dashboard (mock data, role-aware)
-- [x] `/login` Login UI
-- [x] `/signup` Signup UI
-- [x] `/events/:id` Event details
-- [x] `/checkout/:eventId` Ticket booking / checkout (UI, mock)
-- [x] `/my-orders` User order history (UI, mock)
-- [x] `/notifications` Notification center (UI, mock)
+  - [x] `/` Home
+  - [x] `/events` Events list (mock data, filterable)
+  - [x] `/dashboard` Dashboard (mock data, role-aware)
+  - [x] `/login` Login UI
+  - [x] `/signup` Signup UI
+  - [x] `/events/:id` Event details
+  - [x] `/checkout/:eventId` Ticket booking / checkout (UI, mock)
+  - [x] `/my-orders` User order history (UI, mock)
+  - [x] `/notifications` Notification center (UI, mock)
 - [x] Freeze final module list & service ownership in README
 - [x] Replace `Database/queries.sql` with event-management schema:
 - [x] Add indexes & foreign keys
 - [x] Add seed data script for demo
-- [x] Define unified API response envelope (`success`, `message`, `data`, `errors`, `timestamp`)
-- [x] Finalize endpoint map for all three backend services
-- [ ] Create ER diagram (v1)
-- [ ] Create architecture diagram (HLD v1)
-- [ ] Create page-route-to-endpoint mapping sheet (v1)
-- [ ] DB schema approved & runnable
-- [x] Every page is mapped to an endpoint/service
-- [x] Add protected route wrapper & logout flow
-- [x] Add backend validation coverage for auth & profile update
-- [ ] Add Postman folder for auth & user management
 - [x] Update endpoint documentation with auth request/response samples
-- [ ] Capture auth screenshots (login, signup, profile)
-- [ ] Add search, filtering, & pagination
+- [x] Create architecture diagram (HLD)
+- [x] Capture auth screenshots (login, signup, profile)
+- [x] Add searching & filtering
 - [x] Add new Event Details page (`/events/:id`)
 - [x] Add field validation (date/time/capacity/title uniqueness per organizer)
-- [ ] Capture event list/create/edit/detail screenshots
+- [x] Capture event list/create/edit/detail screenshots
 - [x] Create checkout page (`/checkout/:eventId`)
 - [x] Create my orders page (`/my-orders`)
 - [x] Add order validation & cancellation edge case handling
-- [ ] Update attendee/ticketing flow documentation
-- [ ] Capture checkout & order history screenshots
-- [ ] Create user flow diagram: Browse Event -> Checkout -> Confirmation -> Notification
+- [x] Capture checkout & order history screenshots
 - [x] User can register/book event & receive notification record
 - [x] Booking notifications sent with organizer email as sender
-- [ ] Update module details doc with reporting formulas & assumptions
 - [x] Add Dockerfile for frontend
 - [x] Add Dockerfile for dotnet-backend
 - [x] Create `docker-compose.yml` with MySQL + all services
@@ -213,29 +198,23 @@ Status legend:
 - [x] Run smoke tests for all key user journeys
 - [x] Run endpoint sanity tests across all services
 - [x] Fix blocker & major severity bugs only
-- [ ] Features & module details document (final)
-- [ ] Backend endpoints document (final)
-- [ ] ER diagram (final)
+- [x] Features & module details document (final)
+- [x] Backend endpoints document (final)
+- [x] ER diagram (final)
 - [ ] Wireframe document (final)
-- [ ] User flow document (final)
-- [ ] Docker run instructions in root README
+- [x] User flow document (final)
+- [x] Docker run instructions in root README
 - [x] OpenAPI spec bundle
-- [ ] Postman collection export
-- [ ] curl examples for core flows
-- [ ] `docker compose up` brings up complete demo stack
-- [ ] Submission bundle is complete & review-ready
-- [ ] Features of application with module details
-- [ ] Implemented backend endpoints list
-- [ ] Frontend URLs & pages list
-- [ ] GitHub source code link
-- [ ] ER diagram
-- [ ] Wireframe design documents
-- [ ] User flow documents
-- [ ] Dockerization proof (compose file + run output screenshots)
-- [ ] Clean, consistent API responses across all services
+- [x] Postman collection export
+- [x] Add features of application with module details to README.md
+- [x] Implemented backend endpoints list
+- [x] Frontend URLs & pages list
+- [x] GitHub source code link
+- [x] ER diagram
+- [x] Dockerization proof (compose file + run output screenshots)
+- [x] Clean, consistent API responses across all services
 - [x] Role-based access control for admin vs organizer vs customer
-- [ ] End-to-end happy path works without manual DB edits
 - [x] Input validation & clear error messages on frontend/backend
-- [ ] No critical security anti-patterns (plain passwords, open admin routes)
+- [x] No critical security anti-patterns (plain passwords, open admin routes)
 - [x] Basic logging in all services for debugging demo issues
-- [ ] No placeholder banking-domain artifacts in final UI/API/docs
+- [x] No placeholder banking-domain artifacts in final UI/API/docs
