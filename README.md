@@ -176,23 +176,4 @@ dotnet run
 cd ..
 ```
 
-## High-Level Feature Requirements:
-
-## Documentation:
-
-- Features of the application with different module details
-- Screenshots of the UI
-- Implemented backend endpoints
-- Frontend URLs & pages
-- Link of github repository
-- ER diagram
-- Wireframe design documents
-- UserFlow documents
-
-- OpenAPI spec
-- Postman collection
-- curl examples
-- HLD diagram
-- LLD class diagrams
-
 ---

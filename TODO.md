@@ -32,8 +32,8 @@ Status legend:
 - [x] Connect frontend Create Event form to live API
 - [x] Add error banners/loading states for event pages
 - [x] Build frontend Admin Reports page (`/admin/reports`)
-- [x] Frontend URLs/pages document (final)
-- [x] UI screenshots pack (final)
+- [x] Frontend URLs/pages document
+- [x] UI screenshots pack
 - [x] Screenshots of application UI
 - [x] Responsive UI for desktop & mobile
 
@@ -146,13 +146,24 @@ Status legend:
 
 ## Project-wide / Docs / DevOps
 
+### Core Delivery
+
 - [x] User module is fully complete with user management endpoints
 - [x] At least 2-3 non-user modules are fully implemented end-to-end
-- [ ] Full documentation pack is complete for submission
-- [x] Application is dockerized & runnable with one command
 - [x] Login is connected to live backend API
 - [x] Signup is connected to live backend API
 - [x] Event CRUD pages are connected to backend APIs
+- [x] Frontend checkout page & order history page
+- [x] Notification logs table & persistence
+- [x] Add searching & filtering
+- [x] Add new Event Details page (`/events/:id`)
+- [x] Create checkout page (`/checkout/:eventId`)
+- [x] Create my orders page (`/my-orders`)
+- [x] User can register/book event & receive notification record
+- [x] Booking notifications sent with organizer email as sender
+
+### Platform, Data, & Security
+
 - [x] User entity & repository exist
 - [x] Validation annotations exist on auth DTOs
 - [x] Global exception handling exists
@@ -160,61 +171,50 @@ Status legend:
 - [x] Middleware hardening exists (`cors`, `helmet`, `compression`, `morgan`, rate limiter)
 - [x] CORS policy for frontend origins exists
 - [x] Database SQL is aligned to event management domain (current script still banking-focused)
-- [x] Dockerfiles for services exist
-- [x] `docker-compose.yml` exists
-- [x] OpenAPI export/package for all services exists
-- [x] Frontend checkout page & order history page
-- [x] Notification logs table & persistence
-  - [x] `/` Home
-  - [x] `/events` Events list (mock data, filterable)
-  - [x] `/dashboard` Dashboard (mock data, role-aware)
-  - [x] `/login` Login UI
-  - [x] `/signup` Signup UI
-  - [x] `/events/:id` Event details
-  - [x] `/checkout/:eventId` Ticket booking / checkout (UI, mock)
-  - [x] `/my-orders` User order history (UI, mock)
-  - [x] `/notifications` Notification center (UI, mock)
-- [x] Freeze final module list & service ownership in README
-- [x] Replace `Database/queries.sql` with event-management schema:
+- [x] Replace `Database/queries.sql` with event-management schema
 - [x] Add indexes & foreign keys
 - [x] Add seed data script for demo
-- [x] Update endpoint documentation with auth request/response samples
-- [x] Create architecture diagram (HLD)
-- [x] Capture auth screenshots (login, signup, profile)
-- [x] Add searching & filtering
-- [x] Add new Event Details page (`/events/:id`)
 - [x] Add field validation (date/time/capacity/title uniqueness per organizer)
-- [x] Capture event list/create/edit/detail screenshots
-- [x] Create checkout page (`/checkout/:eventId`)
-- [x] Create my orders page (`/my-orders`)
 - [x] Add order validation & cancellation edge case handling
-- [x] Capture checkout & order history screenshots
-- [x] User can register/book event & receive notification record
-- [x] Booking notifications sent with organizer email as sender
-- [x] Add Dockerfile for frontend
-- [x] Add Dockerfile for dotnet-backend
-- [x] Create `docker-compose.yml` with MySQL + all services
-- [x] Add health checks & startup dependencies
-- [x] Run smoke tests for all key user journeys
-- [x] Run endpoint sanity tests across all services
-- [x] Fix blocker & major severity bugs only
-- [x] Features & module details document (final)
-- [x] Backend endpoints document (final)
-- [x] ER diagram (final)
-- [ ] Wireframe document (final)
-- [x] User flow document (final)
-- [x] Docker run instructions in root README
-- [x] OpenAPI spec bundle
-- [x] Postman collection export
-- [x] Add features of application with module details to README.md
-- [x] Implemented backend endpoints list
-- [x] Frontend URLs & pages list
-- [x] GitHub source code link
-- [x] ER diagram
-- [x] Dockerization proof (compose file + run output screenshots)
 - [x] Clean, consistent API responses across all services
 - [x] Role-based access control for admin vs organizer vs customer
 - [x] Input validation & clear error messages on frontend/backend
 - [x] No critical security anti-patterns (plain passwords, open admin routes)
 - [x] Basic logging in all services for debugging demo issues
 - [x] No placeholder banking-domain artifacts in final UI/API/docs
+
+### DevOps & Verification
+
+- [x] Application is dockerized & runnable with one command
+- [x] Dockerfiles for services exist
+- [x] Add Dockerfile for frontend
+- [x] Add Dockerfile for dotnet-backend
+- [x] `docker-compose.yml` exists
+- [x] Create `docker-compose.yml` with MySQL + all services
+- [x] Add health checks & startup dependencies
+- [x] Docker run instructions in root README
+- [x] Dockerization proof (compose file + run output screenshots)
+- [x] Run smoke tests for all key user journeys
+- [x] Run endpoint sanity tests across all services
+- [x] Fix blocker & major severity bugs only
+
+### Documentation (Submission Pack)
+
+- [x] Full documentation pack is complete for submission
+- [x] Freeze final module list & service ownership in README
+- [x] Features & module details document
+- [x] Backend endpoints document
+- [x] Implemented backend endpoints list
+- [x] Frontend URLs & pages list
+- [x] OpenAPI export/package for all services exists
+- [x] OpenAPI spec bundle
+- [x] Postman collection export
+- [x] ER diagram
+- [x] Wireframe document
+- [x] User flow document
+- [x] Create architecture diagram (HLD)
+- [x] Update endpoint documentation with auth request/response samples
+- [x] Capture auth screenshots (login, signup, profile)
+- [x] Capture event list/create/edit/detail screenshots
+- [x] Capture checkout & order history screenshots
+- [x] GitHub source code link
