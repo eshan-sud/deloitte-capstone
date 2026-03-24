@@ -35,19 +35,139 @@ A polyglot event management system with admin, organizer, & customer roles, buil
 
 ## Docker Compose Environment
 
-`docker-compose.yml` now reads root-level environment variables for MySQL, Spring, ASP.NET, Node DB URI, and frontend build API URLs.
+`docker-compose.yml` reads root-level environment variables for MySQL, Spring, ASP.NET, Node DB URI, and frontend build API URLs.
 
-Create a root `.env` from `.env.example` before running compose:
+### Docker Setup
 
-```bash
-copy .env.example .env
+**Prerequisites:**
+
+- Docker Desktop (Windows/Mac) or Docker + Docker Compose (Linux)
+- Verify installation:
+  ```powershell
+  docker --version
+  docker compose --version
+  ```
+
+### Docker Quick Start
+
+1. **Create environment file:**
+
+   ```powershell
+   copy .env.example .env
+   ```
+
+2. **Start all services (builds images if needed):**
+
+   ```powershell
+   docker compose up -d
+   ```
+
+3. **Verify all services are running (wait 30-50 seconds for health checks):**
+
+   ```powershell
+   docker compose ps
+   ```
+
+   Expected: 6 containers with status `healthy` or `running`
+
+4. **Access services:**
+   - **Frontend:** http://localhost:5173
+   - **Spring API:** http://localhost:8080/api
+   - **ASP.NET API:** http://localhost:5107/api (requires X-Admin-Key header)
+   - **Node API:** http://localhost:4000/api
+
+### Docker Usage Commands
+
+**View real-time logs:**
+
+```powershell
+docker compose logs -f                    # All services
+docker compose logs -f dotnet             # Specific service (dotnet, spring, node, mysql, mongodb, frontend)
 ```
 
-Then start the full stack:
+**Test individual services:**
 
-```bash
-docker compose up --build
+```powershell
+# Spring health
+docker exec event-management-spring curl http://localhost:8080/api/health
+
+# ASP.NET health (with admin key)
+docker exec event-management-dotnet curl -H "X-Admin-Key: dev-reporting-admin-key-12345" http://localhost:5107/api/health
+
+# Node health
+docker exec event-management-node curl http://localhost:4000/api/health
+
+# MySQL connection
+docker exec event-management-mysql mysql -u root -p$MYSQL_ROOT_PASSWORD -e "SELECT 1"
 ```
+
+**Stop all services:**
+
+```powershell
+docker compose down
+```
+
+**Stop and remove volumes (clean reset - WARNING: clears DB data):**
+
+```powershell
+docker compose down -v
+```
+
+**Rebuild images after code changes:**
+
+```powershell
+docker compose up -d --build
+```
+
+**View service status in detail:**
+
+```powershell
+docker compose ps -a                     # All containers
+docker stats                             # Resource usage (CPU, memory)
+```
+
+**Access service containers directly:**
+
+```powershell
+docker exec -it event-management-mysql bash        # MySQL shell
+docker exec -it event-management-spring bash       # Spring container
+docker exec -it event-management-dotnet bash       # ASP.NET container
+```
+
+### Database Access from Docker
+
+**MySQL:**
+
+```powershell
+docker exec -it event-management-mysql mysql -u root -pdeloitteCapstone2024 event_db
+```
+
+**MongoDB:**
+
+```powershell
+docker exec -it event-management-mongo mongosh
+```
+
+### Troubleshooting
+
+**Services not becoming healthy:**
+
+1. Check logs: `docker compose logs -f [service-name]`
+2. Ensure `.env` file is correctly configured
+3. Verify ports 3307, 27017, 5107, 8080, 4000, 5173 are not in use
+4. Restart: `docker compose down && docker compose up -d`
+
+**Database connection errors:**
+
+- Ensure wait-for-it scripts complete successfully
+- Check `docker compose logs mysql` and `docker compose logs spring`
+- MySQL may take 10-15 seconds to fully initialize
+
+**Admin key authentication errors:**
+
+- Use correct key: `dev-reporting-admin-key-12345` (from `.env`)
+- Header format: `X-Admin-Key: dev-reporting-admin-key-12345`
+- Verify in ASP.NET requests only (Spring uses JWT, Node is public)
 
 ## Module List
 

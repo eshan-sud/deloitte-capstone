@@ -98,21 +98,21 @@ function Home() {
             </div>
             <div className="hero-image">
               <div className="floating-card card-1">
-                <div className="card-icon">PLN</div>
+                <div className="card-icon">PLAN</div>
                 <div className="card-content">
                   <div className="card-title">Plan Fast</div>
                   <div className="card-desc">Create events in minutes</div>
                 </div>
               </div>
               <div className="floating-card card-2">
-                <div className="card-icon">RGT</div>
+                <div className="card-icon">SEAT</div>
                 <div className="card-content">
                   <div className="card-title">Track Seats</div>
                   <div className="card-desc">Real-time registrations</div>
                 </div>
               </div>
               <div className="floating-card card-3">
-                <div className="card-icon">NTF</div>
+                <div className="card-icon">ALRT</div>
                 <div className="card-content">
                   <div className="card-title">Keep Everyone Updated</div>
                   <div className="card-desc">Announcement ready</div>
