@@ -170,7 +170,7 @@ Status legend:
 - [x] Role model (admin/organizer/customer) exists beyond default ROLE_USER
 - [x] Middleware hardening exists (`cors`, `helmet`, `compression`, `morgan`, rate limiter)
 - [x] CORS policy for frontend origins exists
-- [x] Database SQL is aligned to event management domain (current script still banking-focused)
+- [x] Database SQL is aligned to event management domain
 - [x] Replace `Database/queries.sql` with event-management schema
 - [x] Add indexes & foreign keys
 - [x] Add seed data script for demo
@@ -181,7 +181,6 @@ Status legend:
 - [x] Input validation & clear error messages on frontend/backend
 - [x] No critical security anti-patterns (plain passwords, open admin routes)
 - [x] Basic logging in all services for debugging demo issues
-- [x] No placeholder banking-domain artifacts in final UI/API/docs
 
 ### DevOps & Verification
 

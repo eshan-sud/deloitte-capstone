@@ -197,14 +197,15 @@ docker exec -it event-management-mongo mongosh
 - Diagrams:
   - `Docs/Diagrams/ER Diagram.png`
   - `Docs/Diagrams/HLD.png`
-  - `Docs/Diagrams/Wireframe.png`
+  - `Docs/Wireframes/`
 - OpenAPI Specifications: `Docs/OpenAPI/`
 - Postman:
   - `Docs/Postman/All-Services.postman_collection.json`
   - `Docs/Postman/Local.postman_environment.json`
 - Screenshots: `Docs/Screenshots/`
-- Documentation - Frontend/Backend/Database: `Docs/docs.md`
+- Documentation - Frontend/Backend/Database: `Docs/Documentation.md`
 - User Flows: `Docs/User Flows/`
+- Testing Reports: `Docs/Testing.md`
 
 ## Comands
 
