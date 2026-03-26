@@ -627,13 +627,27 @@ app.use((err, _req, res, _next) => {
   });
 });
 
-connectDb()
-  .then(() => {
-    app.listen(PORT, () => {
+async function startServer() {
+  await connectDb();
+
+  return new Promise((resolve) => {
+    const server = app.listen(PORT, () => {
       console.log(`Notification service listening on port ${PORT}`);
+      resolve(server);
     });
-  })
-  .catch((err) => {
+  });
+}
+
+if (require.main === module) {
+  startServer().catch((err) => {
     console.error("Failed to connect to DB", err);
     process.exit(1);
   });
+}
+
+module.exports = {
+  app,
+  startServer,
+  buildIdentityFilter,
+  serializeNotification,
+};

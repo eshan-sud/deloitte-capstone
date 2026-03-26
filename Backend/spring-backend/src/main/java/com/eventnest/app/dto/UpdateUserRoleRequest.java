@@ -1,0 +1,18 @@
+package com.eventnest.app.dto;
+
+import com.eventnest.app.entity.Role;
+import jakarta.validation.constraints.NotNull;
+
+public class UpdateUserRoleRequest {
+
+    @NotNull(message = "role is required")
+    private Role role;
+
+    public Role getRole() {
+        return role;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
+    }
+}

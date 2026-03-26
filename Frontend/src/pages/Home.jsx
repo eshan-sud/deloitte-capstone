@@ -112,7 +112,7 @@ function Home() {
                 </div>
               </div>
               <div className="floating-card card-3">
-                <div className="card-icon">ALRT</div>
+                <div className="card-icon">ALERT</div>
                 <div className="card-content">
                   <div className="card-title">Keep Everyone Updated</div>
                   <div className="card-desc">Announcement ready</div>

@@ -85,3 +85,6 @@ Backend/dotnet-backend/*.njsproj
 Backend/dotnet-backend/*.sln
 Backend/dotnet-backend/*.sw?
 Backend/dotnet-backend/.DS_Store
+Backend/dotnet-backend/**/bin/
+Backend/dotnet-backend/**/obj/
+Backend/dotnet-backend/**/TestResults/
